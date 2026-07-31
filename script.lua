@@ -1,4 +1,3 @@
--- ROCHROMIUM ENTERPRISE v15: Refactored & Fixed
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 -- Services
