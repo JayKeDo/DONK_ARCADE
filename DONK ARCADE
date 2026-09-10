@@ -1,41 +1,22 @@
 --============================================================
--- DONK ARCADE v3.0
+-- DONK ARCADE v3.1
 --============================================================
 -- SINGLE-FILE EXECUTOR SCRIPT
 --
 -- GAMES:
 --
 -- 1. COLOR PANIC!
---    Don't step on the dangerous color family.
---
 -- 2. LOWER YOUR TONE
---    Keep your microphone level below the danger zone.
 --
---============================================================
---
--- LOWER YOUR TONE
---
--- SOUND ZONES:
---   10
---   20
---   35
---   50
---   65
---   80
---   95
---
--- SENSITIVITY:
---   RELAXED
---   NORMAL
---   STRICT
---   WHISPER
---
--- CHALLENGES:
---   KEEP IT DOWN
---   STAY GREEN
---   NO RED
---   NO SPIKES
---
+-- LOWER YOUR TONE:
+--   • Microphone level detection
+--   • 7 sound circles
+--   • Relaxed / Normal / Strict / Whisper
+--   • CUSTOM sensitivity slider
+--   • 50% - 250% custom sensitivity
+--   • Multiple challenge types
+--   • Live reactive microphone display
+--   • Timed / Endless
 --============================================================
 
 --============================================================
@@ -88,7 +69,7 @@ local function GetRoot()
 end
 
 --============================================================
--- REMOVE PREVIOUS VERSION
+-- CLEAN PREVIOUS GUI
 --============================================================
 
 pcall(function()
@@ -207,6 +188,7 @@ local function Create(
 		pcall(function()
 			object[property] = value
 		end)
+
 	end
 
 	object.Parent =
@@ -225,18 +207,17 @@ local function Tween(
 
 	local tween =
 		TweenService:Create(
+
 			object,
 
 			TweenInfo.new(
 				duration or 0.2,
 
 				style
-				or
-				Enum.EasingStyle.Quad,
+				or Enum.EasingStyle.Quad,
 
 				direction
-				or
-				Enum.EasingDirection.Out
+				or Enum.EasingDirection.Out
 			),
 
 			properties
@@ -275,7 +256,8 @@ local function Stroke(
 	return Create(
 		"UIStroke",
 		{
-			Color = color,
+			Color =
+				color,
 
 			Thickness =
 				thickness
@@ -291,7 +273,9 @@ local function Stroke(
 	)
 end
 
-local function SafeDestroy(object)
+local function SafeDestroy(
+	object
+)
 
 	if object then
 
@@ -303,7 +287,7 @@ local function SafeDestroy(object)
 end
 
 --============================================================
--- MASTER THEME
+-- THEME
 --============================================================
 
 local THEME = {
@@ -408,14 +392,15 @@ local THEME = {
 }
 
 --============================================================
--- INTERNAL HUB
+-- HUB
 --============================================================
 
 local Hub =
 	Create(
 		"Frame",
 		{
-			Name = "Hub",
+			Name =
+				"Hub",
 
 			Size =
 				UDim2.fromOffset(
@@ -457,7 +442,7 @@ Stroke(
 )
 
 --============================================================
--- HUB EFFECT CANVAS
+-- HUB INTERNAL EFFECTS
 --============================================================
 
 local HubEffects =
@@ -486,45 +471,46 @@ local HubEffects =
 		Hub
 	)
 
-Create(
-	"UIGradient",
-	{
-		Color =
-			ColorSequence.new(
-				{
-					ColorSequenceKeypoint.new(
-						0,
-						Color3.fromRGB(
-							16,
-							29,
-							51
-						)
-					),
+local HubGradient =
+	Create(
+		"UIGradient",
+		{
+			Color =
+				ColorSequence.new(
+					{
+						ColorSequenceKeypoint.new(
+							0,
+							Color3.fromRGB(
+								16,
+								29,
+								51
+							)
+						),
 
-					ColorSequenceKeypoint.new(
-						0.5,
-						Color3.fromRGB(
-							11,
-							18,
-							31
-						)
-					),
+						ColorSequenceKeypoint.new(
+							0.5,
+							Color3.fromRGB(
+								11,
+								18,
+								31
+							)
+						),
 
-					ColorSequenceKeypoint.new(
-						1,
-						Color3.fromRGB(
-							31,
-							15,
-							47
+						ColorSequenceKeypoint.new(
+							1,
+							Color3.fromRGB(
+								31,
+								15,
+								47
+							)
 						)
-					)
-				}
-			),
+					}
+				),
 
-		Rotation = 25
-	},
-	HubEffects
-)
+			Rotation = 25
+		},
+		HubEffects
+	)
 
 local HubGlowA =
 	Create(
@@ -598,10 +584,6 @@ Corner(
 	225
 )
 
---============================================================
--- HUB PARTICLES
---============================================================
-
 local HubParticles = {}
 
 for i = 1,24 do
@@ -646,7 +628,8 @@ for i = 1,24 do
 						72,
 						91
 					)
-					/ 100,
+					/
+					100,
 
 				BorderSizePixel = 0,
 
@@ -690,7 +673,7 @@ for i = 1,24 do
 end
 
 --============================================================
--- HUB TOP ACCENT
+-- HUB ACCENT
 --============================================================
 
 local HubAccent =
@@ -874,11 +857,7 @@ Create(
 		Text = "DK",
 
 		TextColor3 =
-			Color3.fromRGB(
-				255,
-				255,
-				255
-			),
+			THEME.Text,
 
 		TextSize = 24,
 
@@ -952,16 +931,13 @@ Create(
 		Font =
 			Enum.Font.GothamBold,
 
-		TextXAlignment =
-			Enum.TextXAlignment.Left,
-
 		ZIndex = 31
 	},
 	Sidebar
 )
 
 --============================================================
--- NAV
+-- NAVIGATION
 --============================================================
 
 local function CreateNavButton(
@@ -991,7 +967,8 @@ local function CreateNavButton(
 				BackgroundTransparency =
 					0.2,
 
-				Text = text,
+				Text =
+					text,
 
 				TextColor3 =
 					THEME.SubText,
@@ -1061,7 +1038,7 @@ Create(
 		BackgroundTransparency = 1,
 
 		Text =
-			"DONK ARCADE  •  v3.0",
+			"DONK ARCADE  •  v3.1",
 
 		TextColor3 =
 			Color3.fromRGB(
@@ -1227,7 +1204,7 @@ local GameCount =
 	)
 
 --============================================================
--- GAME SCROLL
+-- GAME LIST
 --============================================================
 
 local GamesContainer =
@@ -1403,10 +1380,10 @@ local function LaunchColorPanic()
 	local SCAN_DISTANCE = 2500
 	local MIN_FAMILY_PARTS = 5
 
-	local TOUCH_INTERVAL = 0.05
-
 	local AFK_LIMIT = 6
 	local AFK_CAMP_RADIUS = 6
+
+	local TOUCH_INTERVAL = 0.05
 
 	local TIMED_OPTIONS = {
 		60,
@@ -1445,6 +1422,7 @@ local function LaunchColorPanic()
 	local roundToken = 0
 
 	local dangerFamilies = {}
+
 	local dangerCount = 1
 
 	local lastDangerCheck = 0
@@ -1453,14 +1431,15 @@ local function LaunchColorPanic()
 	local afkTimerStart = nil
 
 	--========================================================
-	-- GAME WINDOW
+	-- GAME GUI
 	--========================================================
 
 	local GameGui =
 		Create(
 			"Frame",
 			{
-				Name = "ColorPanic",
+				Name =
+					"ColorPanic",
 
 				Size =
 					UDim2.fromOffset(
@@ -1481,7 +1460,8 @@ local function LaunchColorPanic()
 
 				BorderSizePixel = 0,
 
-				ClipsDescendants = true,
+				ClipsDescendants =
+					true,
 
 				ZIndex = 50
 			},
@@ -1523,7 +1503,7 @@ local function LaunchColorPanic()
 			GameGui
 		)
 
-	local effectGlow =
+	local GameGlow =
 		Create(
 			"Frame",
 			{
@@ -1555,13 +1535,9 @@ local function LaunchColorPanic()
 		)
 
 	Corner(
-		effectGlow,
+		GameGlow,
 		175
 	)
-
-	--========================================================
-	-- ACCENT
-	--========================================================
 
 	local GameAccent =
 		Create(
@@ -1692,8 +1668,7 @@ local function LaunchColorPanic()
 				BackgroundColor3 =
 					THEME.Panel3,
 
-				Text =
-					"‹",
+				Text = "‹",
 
 				TextColor3 =
 					THEME.Text,
@@ -1736,8 +1711,7 @@ local function LaunchColorPanic()
 				BackgroundColor3 =
 					THEME.Panel3,
 
-				Text =
-					"×",
+				Text = "×",
 
 				TextColor3 =
 					THEME.Text,
@@ -1760,7 +1734,7 @@ local function LaunchColorPanic()
 	)
 
 	--========================================================
-	-- MODE CONTROLS
+	-- MODE
 	--========================================================
 
 	Create(
@@ -1814,8 +1788,7 @@ local function LaunchColorPanic()
 				BackgroundColor3 =
 					THEME.Panel2,
 
-				Text =
-					"‹",
+				Text = "‹",
 
 				TextColor3 =
 					THEME.Text,
@@ -1896,8 +1869,7 @@ local function LaunchColorPanic()
 				BackgroundColor3 =
 					THEME.Panel2,
 
-				Text =
-					"›",
+				Text = "›",
 
 				TextColor3 =
 					THEME.Text,
@@ -1940,8 +1912,7 @@ local function LaunchColorPanic()
 
 			BackgroundTransparency = 1,
 
-			Text =
-				"OPTION",
+			Text = "OPTION",
 
 			TextColor3 =
 				THEME.SubText,
@@ -1975,8 +1946,7 @@ local function LaunchColorPanic()
 				BackgroundColor3 =
 					THEME.Panel2,
 
-				Text =
-					"‹",
+				Text = "‹",
 
 				TextColor3 =
 					THEME.Text,
@@ -2057,8 +2027,7 @@ local function LaunchColorPanic()
 				BackgroundColor3 =
 					THEME.Panel2,
 
-				Text =
-					"›",
+				Text = "›",
 
 				TextColor3 =
 					THEME.Text,
@@ -2079,10 +2048,6 @@ local function LaunchColorPanic()
 		OptionRight,
 		10
 	)
-
-	--========================================================
-	-- STATUS
-	--========================================================
 
 	local Status =
 		Create(
@@ -2122,10 +2087,6 @@ local function LaunchColorPanic()
 			},
 			GameGui
 		)
-
-	--========================================================
-	-- DANGER FRAME
-	--========================================================
 
 	local DangerFrame =
 		Create(
@@ -2287,10 +2248,6 @@ local function LaunchColorPanic()
 			DangerFrame
 		)
 
-	--========================================================
-	-- MULTI COLORS
-	--========================================================
-
 	local MultiColor =
 		Create(
 			"Frame",
@@ -2446,9 +2403,6 @@ local function LaunchColorPanic()
 					Font =
 						Enum.Font.GothamBold,
 
-					TextXAlignment =
-						Enum.TextXAlignment.Left,
-
 					ZIndex = 75
 				},
 				slot
@@ -2460,10 +2414,6 @@ local function LaunchColorPanic()
 			Label = label
 		}
 	end
-
-	--========================================================
-	-- AFK WARNING
-	--========================================================
 
 	local AFKWarning =
 		Create(
@@ -2502,10 +2452,6 @@ local function LaunchColorPanic()
 			},
 			GameGui
 		)
-
-	--========================================================
-	-- TIMER
-	--========================================================
 
 	local TimerLabel =
 		Create(
@@ -2548,10 +2494,6 @@ local function LaunchColorPanic()
 		TimerLabel,
 		13
 	)
-
-	--========================================================
-	-- START BUTTON
-	--========================================================
 
 	local StartButton =
 		Create(
@@ -2601,35 +2543,51 @@ local function LaunchColorPanic()
 		13
 	)
 
-	Create(
-		"UIGradient",
-		{
-			Color =
-				ColorSequence.new(
-					{
-						ColorSequenceKeypoint.new(
-							0,
-							THEME.Cyan
-						),
-
-						ColorSequenceKeypoint.new(
-							0.5,
-							THEME.Blue
-						),
-
-						ColorSequenceKeypoint.new(
-							1,
-							THEME.Purple
-						)
-					}
-				)
-		},
-		StartButton
-	)
-
 	--========================================================
-	-- COLOR PANIC LOGIC
+	-- COLOR PANIC SOUND
 	--========================================================
+
+	local SoundFolder =
+		Create(
+			"Folder",
+			{
+				Name =
+					"ColorPanicSounds"
+			},
+			SoundService
+		)
+
+	local WinSound =
+		Create(
+			"Sound",
+			{
+				Name =
+					"WinSound",
+
+				SoundId =
+					WIN_SOUND_ID,
+
+				Volume =
+					0.85
+			},
+			SoundFolder
+		)
+
+	local LossSound =
+		Create(
+			"Sound",
+			{
+				Name =
+					"LossSound",
+
+				SoundId =
+					LOSS_SOUND_ID,
+
+				Volume =
+					0.9
+			},
+			SoundFolder
+		)
 
 	local FAMILY_COLORS = {
 
@@ -2730,7 +2688,8 @@ local function LaunchColorPanic()
 		end
 
 		if s < 0.10
-			and v > 0.82 then
+			and
+			v > 0.82 then
 
 			return "WHITE"
 		end
@@ -2740,56 +2699,66 @@ local function LaunchColorPanic()
 		end
 
 		if h >= 0.04
-			and h <= 0.13
-			and v < 0.60 then
+			and
+			h <= 0.13
+			and
+			v < 0.60 then
 
 			return "BROWN"
 		end
 
 		if h < 0.035
-			or h >= 0.96 then
+			or
+			h >= 0.96 then
 
 			return "RED"
 		end
 
 		if h >= 0.035
-			and h < 0.10 then
+			and
+			h < 0.10 then
 
 			return "ORANGE"
 		end
 
 		if h >= 0.10
-			and h < 0.18 then
+			and
+			h < 0.18 then
 
 			return "YELLOW"
 		end
 
 		if h >= 0.18
-			and h < 0.43 then
+			and
+			h < 0.43 then
 
 			return "GREEN"
 		end
 
 		if h >= 0.43
-			and h < 0.53 then
+			and
+			h < 0.53 then
 
 			return "CYAN"
 		end
 
 		if h >= 0.53
-			and h < 0.68 then
+			and
+			h < 0.68 then
 
 			return "BLUE"
 		end
 
 		if h >= 0.68
-			and h < 0.82 then
+			and
+			h < 0.82 then
 
 			return "PURPLE"
 		end
 
 		if h >= 0.82
-			and h < 0.96 then
+			and
+			h < 0.96 then
 
 			return "PINK"
 		end
@@ -2807,7 +2776,8 @@ local function LaunchColorPanic()
 
 		local origin =
 			root
-			and root.Position
+			and
+			root.Position
 			or
 			Vector3.zero
 
@@ -2821,14 +2791,18 @@ local function LaunchColorPanic()
 
 				local distance = 0
 
-				pcall(function()
+				pcall(
+					function()
 
-					distance =
-						(
-							obj.Position -
-							origin
-						).Magnitude
-				end)
+						distance =
+							(
+								obj.Position
+								-
+								origin
+							).Magnitude
+
+					end
+				)
 
 				if distance <=
 					SCAN_DISTANCE then
@@ -2841,7 +2815,8 @@ local function LaunchColorPanic()
 					counts[family] =
 						(
 							counts[family]
-							or 0
+							or
+							0
 						)
 						+ 1
 
@@ -2870,9 +2845,11 @@ local function LaunchColorPanic()
 				table.insert(
 					candidates,
 					{
-						family = family,
+						family =
+							family,
 
-						count = count,
+						count =
+							count,
 
 						color =
 							representatives[
@@ -2934,7 +2911,8 @@ local function LaunchColorPanic()
 				*
 				totalWeight
 
-			local chosenIndex = 1
+			local chosenIndex =
+				1
 
 			for i,entry in ipairs(
 				available
@@ -2949,7 +2927,8 @@ local function LaunchColorPanic()
 
 				if pick <= 0 then
 
-					chosenIndex = i
+					chosenIndex =
+						i
 
 					break
 				end
@@ -2968,16 +2947,6 @@ local function LaunchColorPanic()
 		end
 
 		return result
-	end
-
-	local function ResetAFK()
-
-		afkAnchorPosition = nil
-
-		afkTimerStart = nil
-
-		AFKWarning.Text = ""
-
 	end
 
 	local function SetSingleDisplay(
@@ -3006,11 +2975,11 @@ local function LaunchColorPanic()
 			slot.Frame.Visible =
 				false
 
-			slot.Dot.BackgroundColor3 =
-				THEME.Panel3
-
 			slot.Label.Text =
 				"—"
+
+			slot.Dot.BackgroundColor3 =
+				THEME.Panel3
 		end
 	end
 
@@ -3055,6 +3024,18 @@ local function LaunchColorPanic()
 			mode == "Hard Endless"
 	end
 
+	local function IsTimed()
+
+		local mode =
+			MODES[
+				currentModeIndex
+			]
+
+		return mode == "Timed"
+			or
+			mode == "Hard"
+	end
+
 	local function UpdateUI()
 
 		local mode =
@@ -3076,13 +3057,13 @@ local function LaunchColorPanic()
 				..
 				" SECONDS"
 
-		elseif mode == "Endless" then
+		elseif mode ==
+			"Endless" then
 
 			OptionLabel.Text =
 				"NO TIMER"
 
-		elseif mode == "Hard"
-			or mode == "Hard Endless" then
+		else
 
 			OptionLabel.Text =
 				tostring(
@@ -3095,17 +3076,59 @@ local function LaunchColorPanic()
 		end
 	end
 
+	local function ResetAFK()
+
+		afkAnchorPosition =
+			nil
+
+		afkTimerStart =
+			nil
+
+		AFKWarning.Text =
+			""
+	end
+
+	local function Invalidate()
+
+		roundToken += 1
+
+		running =
+			false
+
+		selecting =
+			false
+
+		roundEnd =
+			nil
+
+		dangerFamilies =
+			{}
+
+		ResetAFK()
+
+		TimerLabel.Text =
+			"READY"
+
+		Status.Text =
+			"READY"
+
+		SetSingleDisplay(nil)
+		ClearMulti()
+	end
+
 	local function WinRound()
 
 		if not running then
 			return
 		end
 
-		running = false
+		running =
+			false
 
 		roundToken += 1
 
-		roundEnd = nil
+		roundEnd =
+			nil
 
 		ResetAFK()
 
@@ -3136,7 +3159,6 @@ local function LaunchColorPanic()
 				0
 
 			WinSound:Play()
-
 		end)
 	end
 
@@ -3146,11 +3168,13 @@ local function LaunchColorPanic()
 			return
 		end
 
-		running = false
+		running =
+			false
 
 		roundToken += 1
 
-		roundEnd = nil
+		roundEnd =
+			nil
 
 		ResetAFK()
 
@@ -3184,7 +3208,6 @@ local function LaunchColorPanic()
 				0
 
 			LossSound:Play()
-
 		end)
 
 		pcall(function()
@@ -3214,11 +3237,13 @@ local function LaunchColorPanic()
 			return
 		end
 
-		running = false
+		running =
+			false
 
 		roundToken += 1
 
-		roundEnd = nil
+		roundEnd =
+			nil
 
 		Status.Text =
 			"AUTO LOSS"
@@ -3250,7 +3275,6 @@ local function LaunchColorPanic()
 				0
 
 			LossSound:Play()
-
 		end)
 
 		pcall(function()
@@ -3269,7 +3293,8 @@ local function LaunchColorPanic()
 				)
 
 			if humanoid then
-				humanoid.Health = 0
+				humanoid.Health =
+					0
 			end
 		end)
 	end
@@ -3280,7 +3305,8 @@ local function LaunchColorPanic()
 		chosen
 	)
 
-		selecting = true
+		selecting =
+			true
 
 		Status.Text =
 			IsHard()
@@ -3300,28 +3326,6 @@ local function LaunchColorPanic()
 			MultiColor.Visible =
 				true
 
-			for index,family in ipairs(
-				chosen
-			) do
-
-				local slot =
-					DangerSlots[index]
-
-				if slot then
-
-					slot.Frame.Visible =
-						true
-
-					slot.Dot.BackgroundColor3 =
-						FAMILY_COLORS[
-							family
-						]
-
-					slot.Label.Text =
-						"SELECTING..."
-				end
-			end
-
 		else
 
 			SingleColor.Visible =
@@ -3337,17 +3341,16 @@ local function LaunchColorPanic()
 		local start =
 			os.clock()
 
-		local duration = 2
-
 		while
 			os.clock() - start
 			<
-			duration do
+			2 do
 
 			if token ~=
 				roundToken then
 
-				selecting = false
+				selecting =
+					false
 
 				return nil
 			end
@@ -3366,9 +3369,14 @@ local function LaunchColorPanic()
 						]
 
 					local slot =
-						DangerSlots[index]
+						DangerSlots[
+							index
+						]
 
 					if slot then
+
+						slot.Frame.Visible =
+							true
 
 						slot.Dot.BackgroundColor3 =
 							candidate.color
@@ -3405,7 +3413,8 @@ local function LaunchColorPanic()
 		if token ~=
 			roundToken then
 
-			selecting = false
+			selecting =
+				false
 
 			return nil
 		end
@@ -3423,7 +3432,8 @@ local function LaunchColorPanic()
 			)
 		end
 
-		selecting = false
+		selecting =
+			false
 
 		return chosen
 	end
@@ -3431,7 +3441,8 @@ local function LaunchColorPanic()
 	local function StartRound()
 
 		if running
-			or selecting then
+			or
+			selecting then
 
 			return
 		end
@@ -3441,11 +3452,17 @@ local function LaunchColorPanic()
 		local token =
 			roundToken
 
-		running = false
-		selecting = false
-		roundEnd = nil
+		running =
+			false
 
-		dangerFamilies = {}
+		selecting =
+			false
+
+		roundEnd =
+			nil
+
+		dangerFamilies =
+			{}
 
 		ResetAFK()
 
@@ -3469,7 +3486,8 @@ local function LaunchColorPanic()
 
 		else
 
-			dangerCount = 1
+			dangerCount =
+				1
 		end
 
 		local candidates =
@@ -3514,7 +3532,8 @@ local function LaunchColorPanic()
 			return
 		end
 
-		dangerFamilies = {}
+		dangerFamilies =
+			{}
 
 		for _,family in ipairs(
 			selected
@@ -3522,10 +3541,12 @@ local function LaunchColorPanic()
 
 			dangerFamilies[
 				family
-			] = true
+			] =
+				true
 		end
 
-		running = true
+		running =
+			true
 
 		Status.Text =
 			IsHard()
@@ -3534,7 +3555,8 @@ local function LaunchColorPanic()
 			or
 			"DON'T STEP ON THE COLOR!"
 
-		if mode == "Timed" then
+		if mode ==
+			"Timed" then
 
 			roundEnd =
 				os.clock()
@@ -3543,7 +3565,8 @@ local function LaunchColorPanic()
 					optionIndex
 				]
 
-		elseif mode == "Hard" then
+		elseif mode ==
+			"Hard" then
 
 			roundEnd =
 				os.clock()
@@ -3552,7 +3575,8 @@ local function LaunchColorPanic()
 
 		else
 
-			roundEnd = nil
+			roundEnd =
+				nil
 
 			TimerLabel.Text =
 				"ENDLESS"
@@ -3576,7 +3600,7 @@ local function LaunchColorPanic()
 	end
 
 	--========================================================
-	-- DANGER + AFK LOOP
+	-- COLOR PANIC LOOP
 	--========================================================
 
 	RunService.Heartbeat:Connect(
@@ -3585,8 +3609,6 @@ local function LaunchColorPanic()
 			if not running then
 				return
 			end
-
-			-- Danger
 
 			local now =
 				os.clock()
@@ -3598,16 +3620,6 @@ local function LaunchColorPanic()
 
 				lastDangerCheck =
 					now
-
-				if dangerFamilies
-					and
-					next(dangerFamilies)
-					and
-					StandingOnDangerFamily then
-
-					-- Placeholder branch intentionally
-					-- replaced below by direct check.
-				end
 
 				local character =
 					GetCharacter()
@@ -3680,7 +3692,7 @@ local function LaunchColorPanic()
 			end
 
 			--================================================
-			-- ADVANCED CAMP DETECTION
+			-- ANTI CAMP
 			--================================================
 
 			local root =
@@ -3724,9 +3736,6 @@ local function LaunchColorPanic()
 					afkAnchorPosition
 				).Magnitude
 
-			-- The player must leave the entire
-			-- camping radius to reset the timer.
-
 			if distance >=
 				AFK_CAMP_RADIUS then
 
@@ -3768,23 +3777,10 @@ local function LaunchColorPanic()
 				AFKWarning.TextColor3 =
 					THEME.Yellow
 
-				AFKWarning.TextTransparency =
-					(
-						math.sin(
-							os.clock() * 8
-						)
-						+ 1
-					)
-					*
-					0.07
-
 			else
 
 				AFKWarning.Text =
 					""
-
-				AFKWarning.TextTransparency =
-					0
 			end
 
 			if remaining <= 0 then
@@ -3805,21 +3801,7 @@ local function LaunchColorPanic()
 				return
 			end
 
-			if not
-				(
-					MODES[
-						currentModeIndex
-					]
-					==
-					"Timed"
-					or
-					MODES[
-						currentModeIndex
-					]
-					==
-					"Hard"
-				) then
-
+			if not IsTimed() then
 				return
 			end
 
@@ -3838,15 +3820,12 @@ local function LaunchColorPanic()
 				return
 			end
 
-			local seconds =
-				math.ceil(
-					remaining
-				)
-
 			TimerLabel.Text =
 				string.format(
 					"%02d",
-					seconds
+					math.ceil(
+						remaining
+					)
 				)
 
 			if remaining <= 10 then
@@ -3868,80 +3847,37 @@ local function LaunchColorPanic()
 	)
 
 	--========================================================
-	-- MODE BUTTONS
+	-- MODE CONTROLS
 	--========================================================
 
 	ModeLeft.MouseButton1Click:Connect(
 		function()
 
-			if running
-				or selecting then
-
-				roundToken += 1
-
-				running = false
-				selecting = false
-				roundEnd = nil
-
-				ResetAFK()
+			if running or selecting then
+				Invalidate()
 			end
 
-			currentModeIndex -=
-				1
+			currentModeIndex -= 1
 
-			if currentModeIndex <
-				1 then
-
+			if currentModeIndex < 1 then
 				currentModeIndex =
 					#MODES
 			end
 
-			if IsHard() then
-
-				optionIndex =
-					math.clamp(
-						optionIndex,
-						1,
-						#HARD_OPTIONS
-					)
-
-			else
-
-				optionIndex =
-					math.clamp(
-						optionIndex,
-						1,
-						#TIMED_OPTIONS
-					)
-			end
+			optionIndex = 1
 
 			UpdateUI()
-
-			Status.Text =
-				"READY"
-
-			TimerLabel.Text =
-				"READY"
 		end
 	)
 
 	ModeRight.MouseButton1Click:Connect(
 		function()
 
-			if running
-				or selecting then
-
-				roundToken += 1
-
-				running = false
-				selecting = false
-				roundEnd = nil
-
-				ResetAFK()
+			if running or selecting then
+				Invalidate()
 			end
 
-			currentModeIndex +=
-				1
+			currentModeIndex += 1
 
 			if currentModeIndex >
 				#MODES then
@@ -3950,32 +3886,9 @@ local function LaunchColorPanic()
 					1
 			end
 
-			if IsHard() then
-
-				optionIndex =
-					math.clamp(
-						optionIndex,
-						1,
-						#HARD_OPTIONS
-					)
-
-			else
-
-				optionIndex =
-					math.clamp(
-						optionIndex,
-						1,
-						#TIMED_OPTIONS
-					)
-			end
+			optionIndex = 1
 
 			UpdateUI()
-
-			Status.Text =
-				"READY"
-
-			TimerLabel.Text =
-				"READY"
 		end
 	)
 
@@ -3996,25 +3909,16 @@ local function LaunchColorPanic()
 				return
 			end
 
-			if running
-				or selecting then
-
-				roundToken += 1
-
-				running = false
-				selecting = false
-				roundEnd = nil
-
-				ResetAFK()
+			if running or selecting then
+				Invalidate()
 			end
 
-			optionIndex -=
-				1
+			optionIndex -= 1
 
-			if mode == "Timed" then
+			if mode ==
+				"Timed" then
 
-				if optionIndex <
-					1 then
+				if optionIndex < 1 then
 
 					optionIndex =
 						#TIMED_OPTIONS
@@ -4022,8 +3926,7 @@ local function LaunchColorPanic()
 
 			else
 
-				if optionIndex <
-					1 then
+				if optionIndex < 1 then
 
 					optionIndex =
 						#HARD_OPTIONS
@@ -4031,12 +3934,6 @@ local function LaunchColorPanic()
 			end
 
 			UpdateUI()
-
-			Status.Text =
-				"READY"
-
-			TimerLabel.Text =
-				"READY"
 		end
 	)
 
@@ -4057,22 +3954,14 @@ local function LaunchColorPanic()
 				return
 			end
 
-			if running
-				or selecting then
-
-				roundToken += 1
-
-				running = false
-				selecting = false
-				roundEnd = nil
-
-				ResetAFK()
+			if running or selecting then
+				Invalidate()
 			end
 
-			optionIndex +=
-				1
+			optionIndex += 1
 
-			if mode == "Timed" then
+			if mode ==
+				"Timed" then
 
 				if optionIndex >
 					#TIMED_OPTIONS then
@@ -4090,12 +3979,6 @@ local function LaunchColorPanic()
 			end
 
 			UpdateUI()
-
-			Status.Text =
-				"READY"
-
-			TimerLabel.Text =
-				"READY"
 		end
 	)
 
@@ -4104,19 +3987,10 @@ local function LaunchColorPanic()
 
 			if running then
 
-				running = false
-
-				roundToken += 1
-
-				roundEnd = nil
-
-				ResetAFK()
+				Invalidate()
 
 				Status.Text =
 					"ROUND STOPPED"
-
-				TimerLabel.Text =
-					"READY"
 
 				return
 			end
@@ -4126,7 +4000,7 @@ local function LaunchColorPanic()
 	)
 
 	--========================================================
-	-- RETURN
+	-- RETURN TO HUB
 	--========================================================
 
 	local returning = false
@@ -4142,8 +4016,8 @@ local function LaunchColorPanic()
 		roundToken += 1
 
 		running = false
+
 		selecting = false
-		roundEnd = nil
 
 		pcall(function()
 			SoundFolder:Destroy()
@@ -4311,49 +4185,6 @@ local function LaunchColorPanic()
 		},
 		Enum.EasingStyle.Back
 	)
-
-	--========================================================
-	-- GAME EFFECT ANIMATION
-	--========================================================
-
-	task.spawn(
-		function()
-
-			while
-				GameGui
-				and
-				GameGui.Parent do
-
-				local t =
-					os.clock()
-
-				local pulse =
-					(
-						math.sin(
-							t * 0.9
-						)
-						+ 1
-					)
-					/
-					2
-
-				pcall(
-					function()
-
-						effectGlow.BackgroundTransparency =
-							0.97 -
-							pulse *
-							0.025
-
-					end
-				)
-
-				task.wait(
-					0.03
-				)
-			end
-		end
-	)
 end
 
 --============================================================
@@ -4366,7 +4197,7 @@ local function LaunchLowerYourTone()
 		false
 
 	--========================================================
-	-- SETTINGS
+	-- AUDIO SETTINGS
 	--========================================================
 
 	local SOUND_LEVELS = {
@@ -4389,36 +4220,68 @@ local function LaunchLowerYourTone()
 		"CLIP"
 	}
 
+	-- Preset sensitivity values.
+
 	local SENSITIVITIES = {
+
 		{
-			Name = "RELAXED",
-			Multiplier = 0.72
+			Name =
+				"RELAXED",
+
+			Multiplier =
+				0.72
 		},
 
 		{
-			Name = "NORMAL",
-			Multiplier = 1.00
+			Name =
+				"NORMAL",
+
+			Multiplier =
+				1.00
 		},
 
 		{
-			Name = "STRICT",
-			Multiplier = 1.35
+			Name =
+				"STRICT",
+
+			Multiplier =
+				1.35
 		},
 
 		{
-			Name = "WHISPER",
-			Multiplier = 1.80
+			Name =
+				"WHISPER",
+
+			Multiplier =
+				1.80
+		},
+
+		-- CUSTOM is intentionally represented
+		-- separately because its multiplier
+		-- comes from the slider.
+
+		{
+			Name =
+				"CUSTOM",
+
+			Multiplier =
+				1.00
 		}
 	}
 
 	local CHALLENGES = {
+
 		"KEEP IT DOWN",
+
 		"STAY GREEN",
+
 		"NO RED",
+
 		"NO SPIKES"
 	}
 
 	local TIMED_OPTIONS = {
+
 		30,
 		60,
 		120,
@@ -4427,6 +4290,7 @@ local function LaunchLowerYourTone()
 	}
 
 	local MODES = {
+
 		"Timed",
 		"Endless"
 	}
@@ -4441,33 +4305,55 @@ local function LaunchLowerYourTone()
 	-- STATE
 	--========================================================
 
-	local modeIndex = 1
-	local sensitivityIndex = 2
-	local challengeIndex = 1
-	local timeIndex = 2
+	local modeIndex =
+		1
 
-	local running = false
+	local sensitivityIndex =
+		2
 
-	local roundEnd = nil
+	local challengeIndex =
+		1
 
-	local microphoneReady = false
+	local timeIndex =
+		2
 
-	local currentLevel = 0
+	-- Custom sensitivity percentage.
 
-	local smoothLevel = 0
+	local customSensitivity =
+		100
 
-	local peakMemory = 0
+	local running =
+		false
 
-	local spikeCount = 0
+	local roundEnd =
+		nil
 
-	local spikeCooldown = 0
+	local microphoneReady =
+		false
 
-	local audioInput = nil
-	local analyzer = nil
-	local wire = nil
+	local currentLevel =
+		0
+
+	local smoothLevel =
+		0
+
+	local spikeCount =
+		0
+
+	local lastFrame =
+		os.clock()
+
+	local audioInput =
+		nil
+
+	local analyzer =
+		nil
+
+	local wire =
+		nil
 
 	--========================================================
-	-- GAME GUI
+	-- GUI
 	--========================================================
 
 	local GameGui =
@@ -4480,7 +4366,7 @@ local function LaunchLowerYourTone()
 				Size =
 					UDim2.fromOffset(
 						620,
-						620
+						680
 					),
 
 				Position =
@@ -4488,15 +4374,11 @@ local function LaunchLowerYourTone()
 						0.5,
 						-310,
 						0.5,
-						-310
+						-340
 					),
 
 				BackgroundColor3 =
-					Color3.fromRGB(
-						8,
-						11,
-						20
-					),
+					THEME.Panel,
 
 				BorderSizePixel = 0,
 
@@ -4510,22 +4392,18 @@ local function LaunchLowerYourTone()
 
 	Corner(
 		GameGui,
-		28
+		27
 	)
 
 	Stroke(
 		GameGui,
-		Color3.fromRGB(
-			73,
-			81,
-			112
-		),
+		THEME.Border,
 		1.5,
-		0.2
+		0.16
 	)
 
 	--========================================================
-	-- INTERNAL BACKGROUND
+	-- INTERNAL EFFECTS
 	--========================================================
 
 	local Internal =
@@ -4564,7 +4442,7 @@ local function LaunchLowerYourTone()
 						),
 
 						ColorSequenceKeypoint.new(
-							0.45,
+							0.5,
 							Color3.fromRGB(
 								8,
 								15,
@@ -4594,23 +4472,23 @@ local function LaunchLowerYourTone()
 			{
 				Size =
 					UDim2.fromOffset(
-						400,
-						400
+						420,
+						420
 					),
 
 				Position =
 					UDim2.new(
-						0.02,
-						-200,
-						0.05,
-						-200
+						0,
+						-210,
+						0,
+						-170
 					),
 
 				BackgroundColor3 =
 					THEME.Cyan,
 
 				BackgroundTransparency =
-					0.965,
+					0.975,
 
 				BorderSizePixel = 0,
 
@@ -4621,7 +4499,7 @@ local function LaunchLowerYourTone()
 
 	Corner(
 		GlowA,
-		200
+		210
 	)
 
 	local GlowB =
@@ -4630,23 +4508,23 @@ local function LaunchLowerYourTone()
 			{
 				Size =
 					UDim2.fromOffset(
-						400,
-						400
+						390,
+						390
 					),
 
 				Position =
 					UDim2.new(
-						0.98,
-						-200,
-						0.92,
-						-200
+						1,
+						-195,
+						1,
+						-215
 					),
 
 				BackgroundColor3 =
 					THEME.Purple,
 
 				BackgroundTransparency =
-					0.97,
+					0.975,
 
 				BorderSizePixel = 0,
 
@@ -4657,11 +4535,11 @@ local function LaunchLowerYourTone()
 
 	Corner(
 		GlowB,
-		200
+		195
 	)
 
 	--========================================================
-	-- HEADER
+	-- ACCENT
 	--========================================================
 
 	local GameAccent =
@@ -4677,19 +4555,23 @@ local function LaunchLowerYourTone()
 					),
 
 				BackgroundColor3 =
-					THEME.Cyan,
+					THEME.Purple,
 
 				BorderSizePixel = 0,
 
-				ZIndex = 70
+				ZIndex = 80
 			},
 			GameGui
 		)
 
 	Corner(
 		GameAccent,
-		28
+		27
 	)
+
+	--========================================================
+	-- HEADER
+	--========================================================
 
 	local Title =
 		Create(
@@ -4700,13 +4582,13 @@ local function LaunchLowerYourTone()
 						1,
 						-150,
 						0,
-						36
+						35
 					),
 
 				Position =
 					UDim2.fromOffset(
 						26,
-						20
+						19
 					),
 
 				BackgroundTransparency = 1,
@@ -4717,7 +4599,7 @@ local function LaunchLowerYourTone()
 				TextColor3 =
 					THEME.Text,
 
-				TextSize = 25,
+				TextSize = 24,
 
 				Font =
 					Enum.Font.GothamBlack,
@@ -4725,7 +4607,7 @@ local function LaunchLowerYourTone()
 				TextXAlignment =
 					Enum.TextXAlignment.Left,
 
-				ZIndex = 71
+				ZIndex = 81
 			},
 			GameGui
 		)
@@ -4739,13 +4621,13 @@ local function LaunchLowerYourTone()
 						1,
 						-150,
 						0,
-						20
+						18
 					),
 
 				Position =
 					UDim2.fromOffset(
 						27,
-						50
+						49
 					),
 
 				BackgroundTransparency = 1,
@@ -4754,17 +4636,17 @@ local function LaunchLowerYourTone()
 					"YOUR VOICE IS THE CONTROLLER",
 
 				TextColor3 =
-					THEME.Cyan,
+					THEME.Purple,
 
 				TextSize = 9,
 
 				Font =
-					Enum.Font.GothamBold,
+					Enum.Font.GothamBlack,
 
 				TextXAlignment =
 					Enum.TextXAlignment.Left,
 
-				ZIndex = 71
+				ZIndex = 81
 			},
 			GameGui
 		)
@@ -4790,8 +4672,7 @@ local function LaunchLowerYourTone()
 				BackgroundColor3 =
 					THEME.Panel3,
 
-				Text =
-					"‹",
+				Text = "‹",
 
 				TextColor3 =
 					THEME.Text,
@@ -4803,7 +4684,7 @@ local function LaunchLowerYourTone()
 
 				AutoButtonColor = false,
 
-				ZIndex = 72
+				ZIndex = 82
 			},
 			GameGui
 		)
@@ -4834,8 +4715,7 @@ local function LaunchLowerYourTone()
 				BackgroundColor3 =
 					THEME.Panel3,
 
-				Text =
-					"×",
+				Text = "×",
 
 				TextColor3 =
 					THEME.Text,
@@ -4847,7 +4727,7 @@ local function LaunchLowerYourTone()
 
 				AutoButtonColor = false,
 
-				ZIndex = 72
+				ZIndex = 82
 			},
 			GameGui
 		)
@@ -4858,7 +4738,7 @@ local function LaunchLowerYourTone()
 	)
 
 	--========================================================
-	-- MICROPHONE STATUS
+	-- MIC STATUS
 	--========================================================
 
 	local MicStatus =
@@ -4870,7 +4750,7 @@ local function LaunchLowerYourTone()
 						1,
 						-52,
 						0,
-						24
+						22
 					),
 
 				Position =
@@ -4895,13 +4775,13 @@ local function LaunchLowerYourTone()
 				TextXAlignment =
 					Enum.TextXAlignment.Left,
 
-				ZIndex = 72
+				ZIndex = 82
 			},
 			GameGui
 		)
 
 	--========================================================
-	-- MAIN CIRCULAR DISPLAY
+	-- MAIN METER
 	--========================================================
 
 	local MeterOuter =
@@ -4919,7 +4799,7 @@ local function LaunchLowerYourTone()
 						0.5,
 						-112,
 						0,
-						105
+						106
 					),
 
 				BackgroundColor3 =
@@ -4931,7 +4811,7 @@ local function LaunchLowerYourTone()
 
 				BorderSizePixel = 0,
 
-				ZIndex = 71
+				ZIndex = 82
 			},
 			GameGui
 		)
@@ -4974,7 +4854,7 @@ local function LaunchLowerYourTone()
 
 				BorderSizePixel = 0,
 
-				ZIndex = 72
+				ZIndex = 83
 			},
 			MeterOuter
 		)
@@ -5015,12 +4895,12 @@ local function LaunchLowerYourTone()
 				Font =
 					Enum.Font.GothamBlack,
 
-				ZIndex = 73
+				ZIndex = 84
 			},
 			MeterInner
 		)
 
-	local Percent =
+	local LevelCaption =
 		Create(
 			"TextLabel",
 			{
@@ -5029,13 +4909,13 @@ local function LaunchLowerYourTone()
 						1,
 						0,
 						0,
-						20
+						18
 					),
 
 				Position =
 					UDim2.fromOffset(
 						0,
-						112
+						116
 					),
 
 				BackgroundTransparency = 1,
@@ -5051,7 +4931,7 @@ local function LaunchLowerYourTone()
 				Font =
 					Enum.Font.GothamBold,
 
-				ZIndex = 73
+				ZIndex = 84
 			},
 			MeterInner
 		)
@@ -5071,7 +4951,7 @@ local function LaunchLowerYourTone()
 				Position =
 					UDim2.fromOffset(
 						10,
-						136
+						137
 					),
 
 				BackgroundTransparency = 1,
@@ -5087,7 +4967,7 @@ local function LaunchLowerYourTone()
 				Font =
 					Enum.Font.GothamBlack,
 
-				ZIndex = 73
+				ZIndex = 84
 			},
 			MeterInner
 		)
@@ -5105,23 +4985,23 @@ local function LaunchLowerYourTone()
 						1,
 						-52,
 						0,
-						90
+						75
 					),
 
 				Position =
 					UDim2.fromOffset(
 						26,
-						342
+						339
 					),
 
 				BackgroundTransparency = 1,
 
-				ZIndex = 72
+				ZIndex = 82
 			},
 			GameGui
 		)
 
-	local CirclesLayout =
+	local CircleLayout =
 		Create(
 			"UIListLayout",
 			{
@@ -5145,35 +5025,9 @@ local function LaunchLowerYourTone()
 
 	local SoundCircles = {}
 
-	for i = 1,#SOUND_LEVELS do
-
-		local level =
-			SOUND_LEVELS[i]
-
-		local circle =
-			Create(
-				"Frame",
-				{
-					Size =
-						UDim2.fromOffset(
-							61,
-							61
-						),
-
-					BackgroundColor3 =
-						THEME.Panel2,
-
-					BorderSizePixel = 0,
-
-					ZIndex = 73
-				},
-				CirclesFrame
-			)
-
-		Corner(
-			circle,
-			31
-		)
+	for i,level in ipairs(
+		SOUND_LEVELS
+	) do
 
 		local color
 
@@ -5192,6 +5046,31 @@ local function LaunchLowerYourTone()
 			color =
 				THEME.Red
 		end
+
+		local circle =
+			Create(
+				"Frame",
+				{
+					Size =
+						UDim2.fromOffset(
+							64,
+							64
+						),
+
+					BackgroundColor3 =
+						THEME.Panel2,
+
+					BorderSizePixel = 0,
+
+					ZIndex = 83
+				},
+				CirclesFrame
+			)
+
+		Corner(
+			circle,
+			32
+		)
 
 		Stroke(
 			circle,
@@ -5233,27 +5112,27 @@ local function LaunchLowerYourTone()
 					Font =
 						Enum.Font.GothamBlack,
 
-					ZIndex = 74
+					ZIndex = 84
 				},
 				circle
 			)
 
-		local tiny =
+		local unit =
 			Create(
 				"TextLabel",
 				{
 					Size =
 						UDim2.new(
 							1,
-							-4,
+							0,
 							0,
 							15
 						),
 
 					Position =
 						UDim2.fromOffset(
-							2,
-							34
+							0,
+							35
 						),
 
 					BackgroundTransparency = 1,
@@ -5273,36 +5152,42 @@ local function LaunchLowerYourTone()
 					Font =
 						Enum.Font.GothamBlack,
 
-					ZIndex = 74
+					ZIndex = 84
 				},
 				circle
 			)
 
 		SoundCircles[i] = {
-			Frame = circle,
-			Color = color,
-			Level = level
+
+			Frame =
+				circle,
+
+			Color =
+				color,
+
+			Level =
+				level
 		}
 	end
 
 	--========================================================
-	-- CONTROLS
+	-- SENSITIVITY LABEL
 	--========================================================
 
-	local SensitivityLabel =
+	local SensitivityTitle =
 		Create(
 			"TextLabel",
 			{
 				Size =
 					UDim2.fromOffset(
-						115,
+						110,
 						18
 					),
 
 				Position =
 					UDim2.fromOffset(
 						26,
-						445
+						425
 					),
 
 				BackgroundTransparency = 1,
@@ -5318,7 +5203,7 @@ local function LaunchLowerYourTone()
 				Font =
 					Enum.Font.GothamBold,
 
-				ZIndex = 72
+				ZIndex = 82
 			},
 			GameGui
 		)
@@ -5336,7 +5221,7 @@ local function LaunchLowerYourTone()
 				Position =
 					UDim2.fromOffset(
 						140,
-						440
+						420
 					),
 
 				BackgroundColor3 =
@@ -5355,7 +5240,7 @@ local function LaunchLowerYourTone()
 
 				AutoButtonColor = false,
 
-				ZIndex = 73
+				ZIndex = 83
 			},
 			GameGui
 		)
@@ -5378,7 +5263,7 @@ local function LaunchLowerYourTone()
 				Position =
 					UDim2.fromOffset(
 						170,
-						440
+						420
 					),
 
 				BackgroundColor3 =
@@ -5395,7 +5280,7 @@ local function LaunchLowerYourTone()
 				Font =
 					Enum.Font.GothamBlack,
 
-				ZIndex = 73
+				ZIndex = 83
 			},
 			GameGui
 		)
@@ -5418,7 +5303,7 @@ local function LaunchLowerYourTone()
 				Position =
 					UDim2.fromOffset(
 						363,
-						440
+						420
 					),
 
 				BackgroundColor3 =
@@ -5437,7 +5322,7 @@ local function LaunchLowerYourTone()
 
 				AutoButtonColor = false,
 
-				ZIndex = 73
+				ZIndex = 83
 			},
 			GameGui
 		)
@@ -5448,23 +5333,263 @@ local function LaunchLowerYourTone()
 	)
 
 	--========================================================
-	-- CHALLENGE
+	-- CUSTOM SENSITIVITY PANEL
 	--========================================================
 
-	local ChallengeLabel =
+	local CustomPanel =
+		Create(
+			"Frame",
+			{
+				Size =
+					UDim2.new(
+						1,
+						-52,
+						0,
+						66
+					),
+
+				Position =
+					UDim2.fromOffset(
+						26,
+						453
+					),
+
+				BackgroundColor3 =
+					Color3.fromRGB(
+						11,
+						15,
+						26
+					),
+
+				BorderSizePixel = 0,
+
+				Visible = false,
+
+				ZIndex = 82
+			},
+			GameGui
+		)
+
+	Corner(
+		CustomPanel,
+		12
+	)
+
+	Stroke(
+		CustomPanel,
+		THEME.Purple,
+		1,
+		0.45
+	)
+
+	local CustomLabel =
 		Create(
 			"TextLabel",
 			{
 				Size =
 					UDim2.fromOffset(
-						115,
+						125,
+						18
+					),
+
+				Position =
+					UDim2.fromOffset(
+						12,
+						7
+					),
+
+				BackgroundTransparency = 1,
+
+				Text =
+					"CUSTOM SENSITIVITY",
+
+				TextColor3 =
+					THEME.Purple,
+
+				TextSize = 8,
+
+				Font =
+					Enum.Font.GothamBlack,
+
+				TextXAlignment =
+					Enum.TextXAlignment.Left,
+
+				ZIndex = 83
+			},
+			CustomPanel
+		)
+
+	local CustomValue =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.fromOffset(
+						80,
+						18
+					),
+
+				Position =
+					UDim2.new(
+						1,
+						-92,
+						0,
+						7
+					),
+
+				BackgroundTransparency = 1,
+
+				Text =
+					"100%",
+
+				TextColor3 =
+					THEME.Text,
+
+				TextSize = 9,
+
+				Font =
+					Enum.Font.GothamBlack,
+
+				TextXAlignment =
+					Enum.TextXAlignment.Right,
+
+				ZIndex = 83
+			},
+			CustomPanel
+		)
+
+	-- Slider background.
+
+	local SliderBack =
+		Create(
+			"TextButton",
+			{
+				Size =
+					UDim2.new(
+						1,
+						-28,
+						0,
+						8
+					),
+
+				Position =
+					UDim2.fromOffset(
+						14,
+						39
+					),
+
+				BackgroundColor3 =
+					Color3.fromRGB(
+						35,
+						41,
+						59
+					),
+
+				Text = "",
+
+				AutoButtonColor = false,
+
+				ZIndex = 83
+			},
+			CustomPanel
+		)
+
+	Corner(
+		SliderBack,
+		4
+	)
+
+	-- Slider progress.
+
+	local SliderFill =
+		Create(
+			"Frame",
+			{
+				Size =
+					UDim2.new(
+						0.5,
+						0,
+						1,
+						0
+					),
+
+				BackgroundColor3 =
+					THEME.Purple,
+
+				BorderSizePixel = 0,
+
+				ZIndex = 84
+			},
+			SliderBack
+		)
+
+	Corner(
+		SliderFill,
+		4
+	)
+
+	local SliderKnob =
+		Create(
+			"Frame",
+			{
+				Size =
+					UDim2.fromOffset(
+						18,
+						18
+					),
+
+				Position =
+					UDim2.new(
+						0.5,
+						-9,
+						0.5,
+						-9
+					),
+
+				BackgroundColor3 =
+					Color3.fromRGB(
+						245,
+						248,
+						255
+					),
+
+				BorderSizePixel = 0,
+
+				ZIndex = 85
+			},
+			SliderBack
+		)
+
+	Corner(
+		SliderKnob,
+		9
+	)
+
+	Stroke(
+		SliderKnob,
+		THEME.Purple,
+		1.5,
+		0.05
+	)
+
+	--========================================================
+	-- CHALLENGE
+	--========================================================
+
+	local ChallengeTitle =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.fromOffset(
+						110,
 						18
 					),
 
 				Position =
 					UDim2.fromOffset(
 						26,
-						479
+						529
 					),
 
 				BackgroundTransparency = 1,
@@ -5480,7 +5605,7 @@ local function LaunchLowerYourTone()
 				Font =
 					Enum.Font.GothamBold,
 
-				ZIndex = 72
+				ZIndex = 82
 			},
 			GameGui
 		)
@@ -5498,7 +5623,7 @@ local function LaunchLowerYourTone()
 				Position =
 					UDim2.fromOffset(
 						140,
-						474
+						524
 					),
 
 				BackgroundColor3 =
@@ -5517,7 +5642,7 @@ local function LaunchLowerYourTone()
 
 				AutoButtonColor = false,
 
-				ZIndex = 73
+				ZIndex = 83
 			},
 			GameGui
 		)
@@ -5540,7 +5665,7 @@ local function LaunchLowerYourTone()
 				Position =
 					UDim2.fromOffset(
 						170,
-						474
+						524
 					),
 
 				BackgroundColor3 =
@@ -5557,7 +5682,7 @@ local function LaunchLowerYourTone()
 				Font =
 					Enum.Font.GothamBlack,
 
-				ZIndex = 73
+				ZIndex = 83
 			},
 			GameGui
 		)
@@ -5580,7 +5705,7 @@ local function LaunchLowerYourTone()
 				Position =
 					UDim2.fromOffset(
 						363,
-						474
+						524
 					),
 
 				BackgroundColor3 =
@@ -5599,7 +5724,7 @@ local function LaunchLowerYourTone()
 
 				AutoButtonColor = false,
 
-				ZIndex = 73
+				ZIndex = 83
 			},
 			GameGui
 		)
@@ -5610,7 +5735,7 @@ local function LaunchLowerYourTone()
 	)
 
 	--========================================================
-	-- TIMER / START AREA
+	-- TIMER / START
 	--========================================================
 
 	local Timer =
@@ -5626,7 +5751,7 @@ local function LaunchLowerYourTone()
 				Position =
 					UDim2.fromOffset(
 						26,
-						514
+						570
 					),
 
 				BackgroundColor3 =
@@ -5643,7 +5768,7 @@ local function LaunchLowerYourTone()
 				Font =
 					Enum.Font.GothamBlack,
 
-				ZIndex = 73
+				ZIndex = 83
 			},
 			GameGui
 		)
@@ -5666,7 +5791,7 @@ local function LaunchLowerYourTone()
 				Position =
 					UDim2.fromOffset(
 						154,
-						514
+						570
 					),
 
 				BackgroundColor3 =
@@ -5689,7 +5814,7 @@ local function LaunchLowerYourTone()
 
 				AutoButtonColor = false,
 
-				ZIndex = 73
+				ZIndex = 83
 			},
 			GameGui
 		)
@@ -5700,7 +5825,7 @@ local function LaunchLowerYourTone()
 	)
 
 	--========================================================
-	-- SOUND FOLDER
+	-- SOUND
 	--========================================================
 
 	local SoundFolder =
@@ -5723,7 +5848,8 @@ local function LaunchLowerYourTone()
 				SoundId =
 					WIN_SOUND_ID,
 
-				Volume = 0.85
+				Volume =
+					0.85
 			},
 			SoundFolder
 		)
@@ -5738,13 +5864,14 @@ local function LaunchLowerYourTone()
 				SoundId =
 					LOSS_SOUND_ID,
 
-				Volume = 0.9
+				Volume =
+					0.9
 			},
 			SoundFolder
 		)
 
 	--========================================================
-	-- AUDIO SETUP
+	-- AUDIO INPUT
 	--========================================================
 
 	local function FindAudioInput()
@@ -5779,8 +5906,6 @@ local function LaunchLowerYourTone()
 
 	local function SetupAudioAnalyzer()
 
-		-- Clean old audio objects.
-
 		pcall(function()
 
 			if wire then
@@ -5800,6 +5925,9 @@ local function LaunchLowerYourTone()
 			FindAudioInput()
 
 		if not audioInput then
+
+			microphoneReady =
+				false
 
 			MicStatus.Text =
 				"● MICROPHONE: NOT AVAILABLE"
@@ -5859,14 +5987,14 @@ local function LaunchLowerYourTone()
 			or
 			not wire then
 
+			microphoneReady =
+				false
+
 			MicStatus.Text =
 				"● MICROPHONE: SETUP FAILED"
 
 			MicStatus.TextColor3 =
 				THEME.Red
-
-			microphoneReady =
-				false
 
 			return false
 		end
@@ -5884,7 +6012,158 @@ local function LaunchLowerYourTone()
 	end
 
 	--========================================================
-	-- AUDIO LEVEL CONVERSION
+	-- CUSTOM SLIDER
+	--========================================================
+
+	local sliderDragging =
+		false
+
+	local function SetCustomSensitivityFromX(
+		x
+	)
+
+		if sensitivityIndex ~=
+			#SENSITIVITIES then
+
+			return
+		end
+
+		local absoluteX =
+			x
+			-
+			SliderBack.AbsolutePosition.X
+
+		local width =
+			SliderBack.AbsoluteSize.X
+
+		if width <= 0 then
+			return
+		end
+
+		local percentage =
+			math.clamp(
+				absoluteX /
+				width,
+				0,
+				1
+			)
+
+		-- 50% -> 250%
+
+		customSensitivity =
+			math.floor(
+				(
+					50
+					+
+					percentage *
+					200
+				)
+				/
+				5
+				+
+				0.5
+			)
+			*
+			5
+
+		local normalized =
+			(
+				customSensitivity
+				-
+				50
+			)
+			/
+			200
+
+		SliderFill.Size =
+			UDim2.new(
+				normalized,
+				0,
+				1,
+				0
+			)
+
+		SliderKnob.Position =
+			UDim2.new(
+				normalized,
+				-9,
+				0.5,
+				-9
+			)
+
+		CustomValue.Text =
+			tostring(
+				customSensitivity
+			)
+			..
+			"%"
+
+		SensitivityValue.Text =
+			"CUSTOM • "
+			..
+			tostring(
+				customSensitivity
+			)
+			..
+			"%"
+	end
+
+	SliderBack.InputBegan:Connect(
+		function(input)
+
+			if input.UserInputType ==
+				Enum.UserInputType.MouseButton1
+				or
+				input.UserInputType ==
+				Enum.UserInputType.Touch then
+
+				sliderDragging =
+					true
+
+				SetCustomSensitivityFromX(
+					input.Position.X
+				)
+			end
+		end
+	)
+
+	UserInputService.InputChanged:Connect(
+		function(input)
+
+			if not sliderDragging then
+				return
+			end
+
+			if input.UserInputType ==
+				Enum.UserInputType.MouseMovement
+				or
+				input.UserInputType ==
+				Enum.UserInputType.Touch then
+
+				SetCustomSensitivityFromX(
+					input.Position.X
+				)
+			end
+		end
+	)
+
+	UserInputService.InputEnded:Connect(
+		function(input)
+
+			if input.UserInputType ==
+				Enum.UserInputType.MouseButton1
+				or
+				input.UserInputType ==
+				Enum.UserInputType.Touch then
+
+				sliderDragging =
+					false
+			end
+		end
+	)
+
+	--========================================================
+	-- AUDIO LEVEL
 	--========================================================
 
 	local function ReadMicrophoneLevel()
@@ -5916,61 +6195,61 @@ local function LaunchLowerYourTone()
 				0
 		end)
 
-		if rms < 0 then
-			rms = 0
-		end
+		rms =
+			math.clamp(
+				rms,
+				0,
+				1
+			)
 
-		if peak < 0 then
-			peak = 0
-		end
-
-		-- Roblox analyzer measurements are audio
-		-- amplitude measurements. Square-rooting the
-		-- power-style value gives us a more useful
-		-- visual amplitude scale.
+		peak =
+			math.clamp(
+				peak,
+				0,
+				1
+			)
 
 		local rmsAmplitude =
 			math.sqrt(
-				math.clamp(
-					rms,
-					0,
-					1
-				)
+				rms
 			)
 
 		local peakAmplitude =
 			math.sqrt(
-				math.clamp(
-					peak,
-					0,
-					1
-				)
+				peak
 			)
-
-		-- RMS controls the main meter.
-		-- A small amount of peak data catches
-		-- sharper loud moments.
 
 		local mixed =
-			(
-				rmsAmplitude *
-				0.78
-			)
+			rmsAmplitude *
+			0.78
 			+
-			(
-				peakAmplitude *
-				0.22
-			)
+			peakAmplitude *
+			0.22
 
-		local sensitivity =
-			SENSITIVITIES[
-				sensitivityIndex
-			]
+		local multiplier
+
+		if sensitivityIndex ==
+			#SENSITIVITIES then
+
+			multiplier =
+				customSensitivity
+				/
+				100
+
+		else
+
+			multiplier =
+				SENSITIVITIES[
+					sensitivityIndex
+				].Multiplier
+		end
 
 		local value =
-			mixed *
-			100 *
-			sensitivity.Multiplier
+			mixed
+			*
+			100
+			*
+			multiplier
 
 		return math.clamp(
 			value,
@@ -5980,7 +6259,7 @@ local function LaunchLowerYourTone()
 	end
 
 	--========================================================
-	-- DISPLAY LEVEL
+	-- LEVEL DISPLAY
 	--========================================================
 
 	local function GetLevelName(
@@ -5998,6 +6277,7 @@ local function LaunchLowerYourTone()
 
 				selected =
 					LEVEL_NAMES[i]
+
 			else
 
 				break
@@ -6012,95 +6292,97 @@ local function LaunchLowerYourTone()
 	)
 
 		if level < 35 then
+
 			return THEME.Green
 		end
 
 		if level < 65 then
+
 			return THEME.Orange
 		end
 
 		return THEME.Red
 	end
 
-	local function UpdateCircleDisplay(
-		level
-	)
+	--========================================================
+	-- UPDATE SENSITIVITY UI
+	--========================================================
 
-		for _,circle in ipairs(
-			SoundCircles
-		) do
+	local function UpdateSensitivityUI()
 
-			local active =
-				level >=
-				circle.Level
+		if sensitivityIndex ==
+			#SENSITIVITIES then
 
-			if active then
+			CustomPanel.Visible =
+				true
 
-				circle.Frame.BackgroundColor3 =
-					circle.Color:Lerp(
-						Color3.fromRGB(
-							255,
-							255,
-							255
-						),
-						0.08
-					)
+			SensitivityValue.Text =
+				"CUSTOM • "
+				..
+				tostring(
+					customSensitivity
+				)
+				..
+				"%"
 
-			else
+			CustomValue.Text =
+				tostring(
+					customSensitivity
+				)
+				..
+				"%"
 
-				circle.Frame.BackgroundColor3 =
-					THEME.Panel2
-			end
+			local normalized =
+				(
+					customSensitivity
+					-
+					50
+				)
+				/
+				200
+
+			SliderFill.Size =
+				UDim2.new(
+					normalized,
+					0,
+					1,
+					0
+				)
+
+			SliderKnob.Position =
+				UDim2.new(
+					normalized,
+					-9,
+					0.5,
+					-9
+				)
+
+		else
+
+			CustomPanel.Visible =
+				false
+
+			SensitivityValue.Text =
+				SENSITIVITIES[
+					sensitivityIndex
+				].Name
 		end
 	end
 
 	--========================================================
-	-- CHALLENGE LOGIC
+	-- CHALLENGE UI
 	--========================================================
 
-	local function ChallengeAllowsLevel(
-		level
-	)
+	local function UpdateChallengeUI()
 
-		local challenge =
+		ChallengeValue.Text =
 			CHALLENGES[
 				challengeIndex
 			]
-
-		if challenge ==
-			"KEEP IT DOWN" then
-
-			-- Red begins danger.
-
-			return level < 65
-
-		elseif challenge ==
-			"STAY GREEN" then
-
-			-- Green territory only.
-
-			return level < 35
-
-		elseif challenge ==
-			"NO RED" then
-
-			-- Red is prohibited.
-
-			return level < 65
-
-		elseif challenge ==
-			"NO SPIKES" then
-
-			-- Handled by spike detection.
-
-			return true
-		end
-
-		return true
 	end
 
 	--========================================================
-	-- LOSS
+	-- END / WIN / LOSS
 	--========================================================
 
 	local function Lose(
@@ -6111,25 +6393,17 @@ local function LaunchLowerYourTone()
 			return
 		end
 
-		running = false
+		running =
+			false
 
-		roundEnd = nil
-
-		MicStatus.Text =
-			"● MICROPHONE: ROUND OVER"
-
-		MicStatus.TextColor3 =
-			THEME.Red
-
-		Status = Status or nil
-
-		-- Update the center display.
+		roundEnd =
+			nil
 
 		LevelNumber.Text =
 			"LOSE"
 
 		LevelNumber.TextSize =
-			34
+			35
 
 		LevelNumber.TextColor3 =
 			THEME.Red
@@ -6143,12 +6417,6 @@ local function LaunchLowerYourTone()
 		MeterStroke.Color =
 			THEME.Red
 
-		Timer.Text =
-			"FAILED"
-
-		Timer.TextColor3 =
-			THEME.Red
-
 		if reason ==
 			"SPIKE" then
 
@@ -6160,6 +6428,18 @@ local function LaunchLowerYourTone()
 			Subtitle.Text =
 				"WHY: YOUR SOUND LEVEL WAS TOO HIGH"
 		end
+
+		Timer.Text =
+			"FAILED"
+
+		Timer.TextColor3 =
+			THEME.Red
+
+		MicStatus.Text =
+			"● MICROPHONE: ROUND OVER"
+
+		MicStatus.TextColor3 =
+			THEME.Red
 
 		StartButton.Text =
 			"TRY AGAIN"
@@ -6178,19 +6458,17 @@ local function LaunchLowerYourTone()
 		end)
 	end
 
-	--========================================================
-	-- WIN
-	--========================================================
-
 	local function Win()
 
 		if not running then
 			return
 		end
 
-		running = false
+		running =
+			false
 
-		roundEnd = nil
+		roundEnd =
+			nil
 
 		LevelNumber.Text =
 			"OK"
@@ -6217,7 +6495,7 @@ local function LaunchLowerYourTone()
 			THEME.Green
 
 		MicStatus.Text =
-			"● MICROPHONE: ROUND COMPLETE"
+			"● MICROPHONE: COMPLETE"
 
 		MicStatus.TextColor3 =
 			THEME.Green
@@ -6243,27 +6521,7 @@ local function LaunchLowerYourTone()
 	end
 
 	--========================================================
-	-- UPDATE SETTINGS UI
-	--========================================================
-
-	local function UpdateSensitivity()
-
-		SensitivityValue.Text =
-			SENSITIVITIES[
-				sensitivityIndex
-			].Name
-	end
-
-	local function UpdateChallenge()
-
-		ChallengeValue.Text =
-			CHALLENGES[
-				challengeIndex
-			]
-	end
-
-	--========================================================
-	-- START LISTENING
+	-- START ROUND
 	--========================================================
 
 	local function StartRound()
@@ -6272,12 +6530,25 @@ local function LaunchLowerYourTone()
 			return
 		end
 
-		-- Reset
+		if not microphoneReady then
 
-		smoothLevel = 0
-		peakMemory = 0
-		spikeCount = 0
-		spikeCooldown = 0
+			if not SetupAudioAnalyzer() then
+
+				Subtitle.Text =
+					"MICROPHONE INPUT IS NOT AVAILABLE"
+
+				return
+			end
+		end
+
+		currentLevel =
+			0
+
+		smoothLevel =
+			0
+
+		spikeCount =
+			0
 
 		LevelNumber.Text =
 			"0"
@@ -6306,45 +6577,22 @@ local function LaunchLowerYourTone()
 		StartButton.BackgroundColor3 =
 			THEME.Cyan
 
-		-- Need audio input.
-
-		if not microphoneReady then
-
-			local success =
-				SetupAudioAnalyzer()
-
-			if not success then
-
-				MicStatus.Text =
-					"● MICROPHONE REQUIRED"
-
-				MicStatus.TextColor3 =
-					THEME.Red
-
-				Subtitle.Text =
-					"ENABLE MICROPHONE / AUDIO API IN THE EXPERIENCE"
-
-				StartButton.Text =
-					"MIC NOT AVAILABLE"
-
-				return
-			end
-		end
-
-		running = true
-
 		MicStatus.Text =
 			"● MICROPHONE: LISTENING"
 
 		MicStatus.TextColor3 =
 			THEME.Green
 
+		running =
+			true
+
 		local mode =
 			MODES[
 				modeIndex
 			]
 
-		if mode == "Timed" then
+		if mode ==
+			"Timed" then
 
 			roundEnd =
 				os.clock()
@@ -6355,7 +6603,8 @@ local function LaunchLowerYourTone()
 
 		else
 
-			roundEnd = nil
+			roundEnd =
+				nil
 
 			Timer.Text =
 				"ENDLESS"
@@ -6363,7 +6612,7 @@ local function LaunchLowerYourTone()
 	end
 
 	--========================================================
-	-- SETTINGS
+	-- SENSITIVITY BUTTONS
 	--========================================================
 
 	SensLeft.MouseButton1Click:Connect(
@@ -6373,7 +6622,8 @@ local function LaunchLowerYourTone()
 				return
 			end
 
-			sensitivityIndex -= 1
+			sensitivityIndex -=
+				1
 
 			if sensitivityIndex < 1 then
 
@@ -6381,7 +6631,7 @@ local function LaunchLowerYourTone()
 					#SENSITIVITIES
 			end
 
-			UpdateSensitivity()
+			UpdateSensitivityUI()
 		end
 	)
 
@@ -6392,17 +6642,23 @@ local function LaunchLowerYourTone()
 				return
 			end
 
-			sensitivityIndex += 1
+			sensitivityIndex +=
+				1
 
 			if sensitivityIndex >
 				#SENSITIVITIES then
 
-				sensitivityIndex = 1
+				sensitivityIndex =
+					1
 			end
 
-			UpdateSensitivity()
+			UpdateSensitivityUI()
 		end
 	)
+
+	--========================================================
+	-- CHALLENGE BUTTONS
+	--========================================================
 
 	ChallengeLeft.MouseButton1Click:Connect(
 		function()
@@ -6411,15 +6667,17 @@ local function LaunchLowerYourTone()
 				return
 			end
 
-			challengeIndex -= 1
+			challengeIndex -=
+				1
 
-			if challengeIndex < 1 then
+			if challengeIndex <
+				1 then
 
 				challengeIndex =
 					#CHALLENGES
 			end
 
-			UpdateChallenge()
+			UpdateChallengeUI()
 		end
 	)
 
@@ -6430,26 +6688,34 @@ local function LaunchLowerYourTone()
 				return
 			end
 
-			challengeIndex += 1
+			challengeIndex +=
+				1
 
 			if challengeIndex >
 				#CHALLENGES then
 
-				challengeIndex = 1
+				challengeIndex =
+					1
 			end
 
-			UpdateChallenge()
+			UpdateChallengeUI()
 		end
 	)
+
+	--========================================================
+	-- START BUTTON
+	--========================================================
 
 	StartButton.MouseButton1Click:Connect(
 		function()
 
 			if running then
 
-				running = false
+				running =
+					false
 
-				roundEnd = nil
+				roundEnd =
+					nil
 
 				StartButton.Text =
 					"START LISTENING"
@@ -6459,6 +6725,9 @@ local function LaunchLowerYourTone()
 
 				MicStatus.Text =
 					"● MICROPHONE: READY"
+
+				MicStatus.TextColor3 =
+					THEME.Green
 
 				Timer.Text =
 					"READY"
@@ -6471,25 +6740,48 @@ local function LaunchLowerYourTone()
 	)
 
 	--========================================================
-	-- AUDIO MONITOR
+	-- AUDIO RENDER LOOP
 	--========================================================
 
 	RunService.RenderStepped:Connect(
 		function()
 
-			local rawLevel =
+			local now =
+				os.clock()
+
+			local dt =
+				math.clamp(
+					now -
+					lastFrame,
+					0,
+					0.1
+				)
+
+			lastFrame =
+				now
+
+			local raw =
 				ReadMicrophoneLevel()
 
 			-- Smooth microphone level.
 
+			local smoothing =
+				math.clamp(
+					dt *
+					8,
+					0,
+					1
+				)
+
 			smoothLevel =
-				smoothLevel +
+				smoothLevel
+				+
 				(
-					rawLevel -
+					raw -
 					smoothLevel
 				)
 				*
-				0.22
+				smoothing
 
 			currentLevel =
 				math.clamp(
@@ -6507,7 +6799,7 @@ local function LaunchLowerYourTone()
 					)
 				)
 
-			LevelName.Text =
+			local levelName =
 				GetLevelName(
 					currentLevel
 				)
@@ -6516,6 +6808,9 @@ local function LaunchLowerYourTone()
 				GetLevelColor(
 					currentLevel
 				)
+
+			LevelName.Text =
+				levelName
 
 			LevelNumber.TextColor3 =
 				levelColor
@@ -6527,35 +6822,39 @@ local function LaunchLowerYourTone()
 				currentLevel
 			)
 
-			-- Main meter ring reacts to sound.
+			--================================================
+			-- MAIN METER REACTION
+			--================================================
+
+			local normalized =
+				currentLevel /
+				100
 
 			local pulse =
-				math.clamp(
-					0.98
-					+
-					(
-						currentLevel
-						/
-						100
-					)
-					*
-					0.12,
-					0.98,
-					1.10
-				)
+				1
+				+
+				normalized *
+				0.09
 
 			MeterOuter.Size =
 				UDim2.fromOffset(
-					225 * pulse,
-					225 * pulse
+					225 *
+					pulse,
+
+					225 *
+					pulse
 				)
 
 			MeterOuter.Position =
 				UDim2.new(
 					0.5,
-					-112 * pulse,
+
+					-112 *
+					pulse,
+
 					0,
-					105 -
+
+					106 -
 					(
 						112 *
 						(
@@ -6565,50 +6864,25 @@ local function LaunchLowerYourTone()
 					)
 				)
 
-			--================================================
-			-- ONLY GAME WHILE ROUND IS RUNNING
-			--================================================
+			if running then
 
-			if not running then
-				return
-			end
+				local challenge =
+					CHALLENGES[
+						challengeIndex
+					]
 
-			--================================================
-			-- HARD THRESHOLD
-			--================================================
+				--================================================
+				-- KEEP IT DOWN
+				--================================================
 
-			local challenge =
-				CHALLENGES[
-					challengeIndex
-				]
+				if challenge ==
+					"KEEP IT DOWN"
+					or
+					challenge ==
+					"NO RED" then
 
-			if
-				challenge ==
-				"KEEP IT DOWN"
-				or
-				challenge ==
-				"NO RED" then
-
-				if currentLevel >= 95 then
-
-					Lose(
-						"LEVEL"
-					)
-
-					return
-				end
-
-				-- Sustained red causes loss.
-
-				if currentLevel >= 65 then
-
-					peakMemory =
-						math.max(
-							peakMemory,
-							currentLevel
-						)
-
-					if currentLevel >= 78 then
+					if currentLevel >=
+						78 then
 
 						Lose(
 							"LEVEL"
@@ -6616,48 +6890,50 @@ local function LaunchLowerYourTone()
 
 						return
 					end
-				end
-
-			elseif challenge ==
-				"STAY GREEN" then
-
-				if currentLevel >= 35 then
-
-					Lose(
-						"LEVEL"
-					)
-
-					return
-				end
-
-			elseif challenge ==
-				"NO SPIKES" then
 
 				--================================================
-				-- SPIKE TRACKING
+				-- STAY GREEN
 				--================================================
 
-				if spikeCooldown > 0 then
+				elseif challenge ==
+					"STAY GREEN" then
 
-					spikeCooldown =
-						math.max(
-							0,
-							spikeCooldown
-							-
-							RunService.Heartbeat:Wait()
+					if currentLevel >=
+						35 then
+
+						Lose(
+							"LEVEL"
 						)
-				end
 
-				if currentLevel >= 80
-					and
-					spikeCooldown <= 0 then
+						return
+					end
 
-					spikeCount += 1
+				--================================================
+				-- NO SPIKES
+				--================================================
 
-					spikeCooldown =
-						0.7
+				elseif challenge ==
+					"NO SPIKES" then
 
-					if spikeCount >= 3 then
+					if currentLevel >=
+						80 then
+
+						spikeCount +=
+							dt
+
+					else
+
+						spikeCount =
+							math.max(
+								0,
+								spikeCount -
+								dt *
+								0.5
+							)
+					end
+
+					if spikeCount >=
+						3 then
 
 						Lose(
 							"SPIKE"
@@ -6666,52 +6942,96 @@ local function LaunchLowerYourTone()
 						return
 					end
 				end
-			end
 
-			--================================================
-			-- TIMER
-			--================================================
+				--================================================
+				-- TIMER
+				--================================================
 
-			if roundEnd then
+				if roundEnd then
 
-				local remaining =
-					roundEnd -
-					os.clock()
+					local remaining =
+						roundEnd -
+						os.clock()
 
-				if remaining <= 0 then
+					if remaining <= 0 then
 
-					Win()
+						Win()
 
-					return
-				end
+						return
+					end
 
-				Timer.Text =
-					string.format(
-						"%02d",
-						math.ceil(
-							remaining
+					Timer.Text =
+						string.format(
+							"%02d",
+							math.ceil(
+								remaining
+							)
 						)
-					)
 
-				if remaining <= 10 then
+					if remaining <=
+						10 then
 
-					Timer.TextColor3 =
-						THEME.Orange
+						Timer.TextColor3 =
+							THEME.Red
 
-				else
+					elseif remaining <=
+						20 then
 
-					Timer.TextColor3 =
-						THEME.Text
+						Timer.TextColor3 =
+							THEME.Orange
+
+					else
+
+						Timer.TextColor3 =
+							THEME.Text
+					end
 				end
 			end
 		end
 	)
 
 	--========================================================
-	-- SAFE AUDIO REFRESH
+	-- HELPER FOR CIRCLE DISPLAY
 	--========================================================
 
-	local audioWatcherRunning = true
+	local function UpdateCircleDisplay(
+		level
+	)
+
+		for _,circle in ipairs(
+			SoundCircles
+		) do
+
+			local active =
+				level >=
+				circle.Level
+
+			if active then
+
+				circle.Frame.BackgroundColor3 =
+					circle.Color:Lerp(
+						Color3.fromRGB(
+							255,
+							255,
+							255
+						),
+						0.10
+					)
+
+			else
+
+				circle.Frame.BackgroundColor3 =
+					THEME.Panel2
+			end
+		end
+	end
+
+	--========================================================
+	-- AUDIO REFRESH
+	--========================================================
+
+	local audioWatcherRunning =
+		true
 
 	task.spawn(
 		function()
@@ -6736,7 +7056,7 @@ local function LaunchLowerYourTone()
 	)
 
 	--========================================================
-	-- RETURN
+	-- RETURN TO HUB
 	--========================================================
 
 	local returning = false
@@ -6747,14 +7067,17 @@ local function LaunchLowerYourTone()
 			return
 		end
 
-		returning = true
+		returning =
+			true
 
 		audioWatcherRunning =
 			false
 
-		running = false
+		running =
+			false
 
-		roundEnd = nil
+		roundEnd =
+			nil
 
 		pcall(function()
 
@@ -6777,8 +7100,8 @@ local function LaunchLowerYourTone()
 			{
 				Size =
 					UDim2.fromOffset(
-						570,
-						575
+						575,
+						635
 					),
 
 				BackgroundTransparency =
@@ -6842,7 +7165,8 @@ local function LaunchLowerYourTone()
 				input.UserInputType ==
 				Enum.UserInputType.Touch then
 
-				dragging = true
+				dragging =
+					true
 
 				dragStart =
 					input.Position
@@ -6856,7 +7180,8 @@ local function LaunchLowerYourTone()
 						if input.UserInputState ==
 							Enum.UserInputState.End then
 
-							dragging = false
+							dragging =
+								false
 						end
 					end
 				)
@@ -6904,23 +7229,18 @@ local function LaunchLowerYourTone()
 	-- INITIALIZE
 	--========================================================
 
-	UpdateSensitivity()
-	UpdateChallenge()
-
-	MicStatus.Text =
-		"● MICROPHONE: SEARCHING"
+	UpdateSensitivityUI()
+	UpdateChallengeUI()
 
 	Timer.Text =
 		"READY"
-
-	-- Try immediately.
 
 	SetupAudioAnalyzer()
 
 	GameGui.Size =
 		UDim2.fromOffset(
-			570,
-			575
+			575,
+			635
 		)
 
 	Tween(
@@ -6930,14 +7250,14 @@ local function LaunchLowerYourTone()
 			Size =
 				UDim2.fromOffset(
 					620,
-					620
+					680
 				)
 		},
 		Enum.EasingStyle.Back
 	)
 
 	--========================================================
-	-- INTERNAL ANIMATION
+	-- INTERNAL EFFECT ANIMATION
 	--========================================================
 
 	task.spawn(
@@ -6951,12 +7271,14 @@ local function LaunchLowerYourTone()
 				local t =
 					os.clock()
 
-				local p =
+				local pulse =
 					(
 						math.sin(
-							t * 0.7
+							t *
+							0.8
 						)
-						+ 1
+						+
+						1
 					)
 					/
 					2
@@ -6964,12 +7286,14 @@ local function LaunchLowerYourTone()
 				pcall(function()
 
 					GlowA.BackgroundTransparency =
-						0.975 -
-						p * 0.02
+						0.98 -
+						pulse *
+						0.02
 
 					GlowB.BackgroundTransparency =
 						0.98 -
-						p * 0.018
+						pulse *
+						0.018
 
 				end)
 
@@ -7348,10 +7672,6 @@ local function CreateGameCard(
 		10
 	)
 
-	--========================================================
-	-- CARD ANIMATION
-	--========================================================
-
 	Card.MouseEnter:Connect(
 		function()
 
@@ -7449,10 +7769,6 @@ local function CreateGameCard(
 		end
 	)
 
-	--========================================================
-	-- LAUNCH GAME
-	--========================================================
-
 	PlayButton.MouseButton1Click:Connect(
 		function()
 
@@ -7479,7 +7795,7 @@ local function CreateGameCard(
 end
 
 --============================================================
--- CREATE ALL GAME CARDS
+-- BUILD LIBRARY
 --============================================================
 
 for _,gameData in ipairs(
@@ -7518,7 +7834,9 @@ GamesContainer.CanvasSize =
 -- NAVIGATION
 --============================================================
 
-local function SetNav(active)
+local function SetNav(
+	active
+)
 
 	for _,button in ipairs(
 		{
@@ -7597,13 +7915,11 @@ AboutNav.MouseButton1Click:Connect(
 )
 
 --============================================================
--- HUB DRAGGING
+-- HUB DRAG
 --============================================================
 
 local hubDragging = false
-
 local hubDragStart
-
 local hubStartPosition
 
 Header.InputBegan:Connect(
@@ -7615,7 +7931,8 @@ Header.InputBegan:Connect(
 			input.UserInputType ==
 			Enum.UserInputType.Touch then
 
-			hubDragging = true
+			hubDragging =
+				true
 
 			hubDragStart =
 				input.Position
@@ -7629,7 +7946,8 @@ Header.InputBegan:Connect(
 					if input.UserInputState ==
 						Enum.UserInputState.End then
 
-						hubDragging = false
+						hubDragging =
+							false
 					end
 				end
 			)
@@ -7691,9 +8009,11 @@ task.spawn(
 			local pulse =
 				(
 					math.sin(
-						t * 0.8
+						t *
+						0.8
 					)
-					+ 1
+					+
+					1
 				)
 				/
 				2
@@ -7702,11 +8022,23 @@ task.spawn(
 
 				HubGlowA.BackgroundTransparency =
 					0.96 -
-					pulse * 0.025
+					pulse *
+					0.025
 
 				HubGlowB.BackgroundTransparency =
 					0.97 -
-					pulse * 0.02
+					pulse *
+					0.02
+
+				HubGradient.Rotation =
+					25
+					+
+					math.sin(
+						t *
+						0.25
+					)
+					*
+					8
 			end)
 
 			for _,data in ipairs(
