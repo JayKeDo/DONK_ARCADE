@@ -1,4 +1,4 @@
 # STATUS: NOT WORKING
 
 --COPY AND PASTE THIS IN THE EXECUTOR
-loadstring(game:HttpGet("https://raw.githubusercontent.com/NoTwistedHere/Roblox/main/AntiAFK.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/JayKeDo/DONK_ARCADE/refs/heads/main/DONK%20ARCADE"))()
