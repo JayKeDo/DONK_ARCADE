@@ -1,25 +1,40 @@
 --============================================================
--- DONK ARCADE v2.1
--- Single-file executor arcade hub
+-- DONK ARCADE v3.0
+--============================================================
+-- SINGLE-FILE EXECUTOR SCRIPT
 --
--- CURRENT GAME:
---   COLOR PANIC!
+-- GAMES:
 --
--- HUB:
---   • Animated effects contained INSIDE menu
---   • Neon cyan / blue / purple theme
---   • Draggable
+-- 1. COLOR PANIC!
+--    Don't step on the dangerous color family.
 --
--- COLOR PANIC:
---   • Smart color families
---   • Timed / Endless / Hard / Hard Endless
---   • Hard mode shows ALL danger colors
---   • Animated danger-color selection
---   • Win / loss sounds
---   • Advanced anti-AFK / anti-camping
---   • 6-second stationary-area limit
---   • Tiny movements do NOT reset AFK
---   • Explicit loss reason
+-- 2. LOWER YOUR TONE
+--    Keep your microphone level below the danger zone.
+--
+--============================================================
+--
+-- LOWER YOUR TONE
+--
+-- SOUND ZONES:
+--   10
+--   20
+--   35
+--   50
+--   65
+--   80
+--   95
+--
+-- SENSITIVITY:
+--   RELAXED
+--   NORMAL
+--   STRICT
+--   WHISPER
+--
+-- CHALLENGES:
+--   KEEP IT DOWN
+--   STAY GREEN
+--   NO RED
+--   NO SPIKES
 --
 --============================================================
 
@@ -38,10 +53,18 @@ local SoundService = game:GetService("SoundService")
 --============================================================
 
 local function GetLocalPlayer()
-	return Players.LocalPlayer
+
+	local player
+
+	pcall(function()
+		player = Players.LocalPlayer
+	end)
+
+	return player
 end
 
 local function GetCharacter()
+
 	local player = GetLocalPlayer()
 
 	if not player then
@@ -52,22 +75,31 @@ local function GetCharacter()
 end
 
 local function GetRoot()
+
 	local character = GetCharacter()
 
 	if not character then
 		return nil
 	end
 
-	return character:FindFirstChild("HumanoidRootPart")
+	return character:FindFirstChild(
+		"HumanoidRootPart"
+	)
 end
 
 --============================================================
--- CLEAN OLD GUI
+-- REMOVE PREVIOUS VERSION
 --============================================================
 
 pcall(function()
-	local core = game:GetService("CoreGui")
-	local old = core:FindFirstChild("DonkArcade")
+
+	local core =
+		game:GetService("CoreGui")
+
+	local old =
+		core:FindFirstChild(
+			"DonkArcade"
+		)
 
 	if old then
 		old:Destroy()
@@ -75,13 +107,23 @@ pcall(function()
 end)
 
 pcall(function()
-	local player = GetLocalPlayer()
+
+	local player =
+		GetLocalPlayer()
 
 	if player then
-		local playerGui = player:FindFirstChild("PlayerGui")
+
+		local playerGui =
+			player:FindFirstChild(
+				"PlayerGui"
+			)
 
 		if playerGui then
-			local old = playerGui:FindFirstChild("DonkArcade")
+
+			local old =
+				playerGui:FindFirstChild(
+					"DonkArcade"
+				)
 
 			if old then
 				old:Destroy()
@@ -97,63 +139,106 @@ end)
 local GuiParent
 
 pcall(function()
-	GuiParent = game:GetService("CoreGui")
+
+	GuiParent =
+		game:GetService(
+			"CoreGui"
+		)
 end)
 
 if not GuiParent then
-	local player = GetLocalPlayer()
+
+	local player =
+		GetLocalPlayer()
 
 	if not player then
 		return
 	end
 
-	GuiParent = player:WaitForChild("PlayerGui")
+	GuiParent =
+		player:WaitForChild(
+			"PlayerGui"
+		)
 end
 
 --============================================================
 -- ROOT GUI
 --============================================================
 
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "DonkArcade"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.IgnoreGuiInset = true
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-ScreenGui.Parent = GuiParent
+local ScreenGui =
+	Instance.new(
+		"ScreenGui"
+	)
+
+ScreenGui.Name =
+	"DonkArcade"
+
+ScreenGui.ResetOnSpawn =
+	false
+
+ScreenGui.IgnoreGuiInset =
+	true
+
+ScreenGui.ZIndexBehavior =
+	Enum.ZIndexBehavior.Sibling
+
+ScreenGui.Parent =
+	GuiParent
 
 --============================================================
 -- HELPERS
 --============================================================
 
-local function Create(className, properties, parent)
+local function Create(
+	className,
+	properties,
+	parent
+)
 
-	local object = Instance.new(className)
+	local object =
+		Instance.new(
+			className
+		)
 
-	for property, value in pairs(properties or {}) do
+	for property,value in pairs(
+		properties or {}
+	) do
 
 		pcall(function()
 			object[property] = value
 		end)
-
 	end
 
-	object.Parent = parent
+	object.Parent =
+		parent
 
 	return object
 end
 
-local function Tween(object, duration, properties, style, direction)
-
-	local info = TweenInfo.new(
-		duration or 0.2,
-		style or Enum.EasingStyle.Quad,
-		direction or Enum.EasingDirection.Out
-	)
+local function Tween(
+	object,
+	duration,
+	properties,
+	style,
+	direction
+)
 
 	local tween =
 		TweenService:Create(
 			object,
-			info,
+
+			TweenInfo.new(
+				duration or 0.2,
+
+				style
+				or
+				Enum.EasingStyle.Quad,
+
+				direction
+				or
+				Enum.EasingDirection.Out
+			),
+
 			properties
 		)
 
@@ -162,13 +247,19 @@ local function Tween(object, duration, properties, style, direction)
 	return tween
 end
 
-local function Corner(object, radius)
+local function Corner(
+	object,
+	radius
+)
 
 	return Create(
 		"UICorner",
 		{
 			CornerRadius =
-				UDim.new(0, radius)
+				UDim.new(
+					0,
+					radius
+				)
 		},
 		object
 	)
@@ -185,8 +276,16 @@ local function Stroke(
 		"UIStroke",
 		{
 			Color = color,
-			Thickness = thickness or 1,
-			Transparency = transparency or 0
+
+			Thickness =
+				thickness
+				or
+				1,
+
+			Transparency =
+				transparency
+				or
+				0
 		},
 		object
 	)
@@ -204,21 +303,21 @@ local function SafeDestroy(object)
 end
 
 --============================================================
--- THEME
+-- MASTER THEME
 --============================================================
 
 local THEME = {
 
 	Background =
 		Color3.fromRGB(
-			8,
-			10,
-			18
+			7,
+			9,
+			17
 		),
 
 	Panel =
 		Color3.fromRGB(
-			14,
+			13,
 			17,
 			29
 		),
@@ -226,124 +325,129 @@ local THEME = {
 	Panel2 =
 		Color3.fromRGB(
 			19,
-			23,
-			38
+			24,
+			40
 		),
 
 	Panel3 =
 		Color3.fromRGB(
-			26,
-			31,
-			50
+			27,
+			34,
+			54
 		),
 
 	Text =
 		Color3.fromRGB(
-			245,
+			244,
 			248,
 			255
 		),
 
 	SubText =
 		Color3.fromRGB(
-			145,
-			154,
-			178
+			137,
+			148,
+			174
 		),
 
 	Cyan =
 		Color3.fromRGB(
-			55,
-			225,
+			52,
+			224,
 			255
 		),
 
 	Blue =
 		Color3.fromRGB(
-			80,
-			125,
+			83,
+			126,
 			255
 		),
 
 	Purple =
 		Color3.fromRGB(
-			165,
-			85,
+			166,
+			82,
 			255
 		),
 
 	Pink =
 		Color3.fromRGB(
 			255,
-			82,
-			187
+			83,
+			191
 		),
 
 	Green =
 		Color3.fromRGB(
 			70,
 			255,
-			160
+			157
 		),
 
-	Yellow =
+	Orange =
 		Color3.fromRGB(
 			255,
-			215,
-			90
+			166,
+			67
 		),
 
 	Red =
 		Color3.fromRGB(
 			255,
-			90,
-			120
+			74,
+			111
 		),
 
 	Border =
 		Color3.fromRGB(
-			64,
-			72,
-			104
+			59,
+			70,
+			105
 		)
 }
 
 --============================================================
--- HUB
+-- INTERNAL HUB
 --============================================================
 
-local Hub = Create(
-	"Frame",
-	{
-		Name = "Hub",
+local Hub =
+	Create(
+		"Frame",
+		{
+			Name = "Hub",
 
-		Size =
-			UDim2.fromOffset(
-				820,
-				560
-			),
+			Size =
+				UDim2.fromOffset(
+					820,
+					560
+				),
 
-		Position =
-			UDim2.new(
-				0.5,
-				-410,
-				0.5,
-				-280
-			),
+			Position =
+				UDim2.new(
+					0.5,
+					-410,
+					0.5,
+					-280
+				),
 
-		BackgroundColor3 =
-			THEME.Panel,
+			BackgroundColor3 =
+				THEME.Panel,
 
-		BorderSizePixel = 0,
+			BorderSizePixel = 0,
 
-		ClipsDescendants = true,
+			ClipsDescendants =
+				true,
 
-		ZIndex = 10
-	},
-	ScreenGui
+			ZIndex = 10
+		},
+		ScreenGui
+	)
+
+Corner(
+	Hub,
+	22
 )
-
-Corner(Hub, 22)
 
 Stroke(
 	Hub,
@@ -353,38 +457,36 @@ Stroke(
 )
 
 --============================================================
--- HUB INTERNAL BACKGROUND
+-- HUB EFFECT CANVAS
 --============================================================
 
--- IMPORTANT:
--- Everything decorative lives INSIDE Hub.
--- Nothing decorative is parented directly to ScreenGui.
+local HubEffects =
+	Create(
+		"Frame",
+		{
+			Name =
+				"InternalEffects",
 
-local HubEffects = Create(
-	"Frame",
-	{
-		Name = "InternalEffects",
+			Size =
+				UDim2.fromScale(
+					1,
+					1
+				),
 
-		Size =
-			UDim2.fromScale(
+			BackgroundTransparency =
 				1,
-				1
-			),
 
-		BackgroundTransparency = 1,
+			BorderSizePixel = 0,
 
-		BorderSizePixel = 0,
+			ClipsDescendants =
+				true,
 
-		ClipsDescendants = true,
+			ZIndex = 11
+		},
+		Hub
+	)
 
-		ZIndex = 11
-	},
-	Hub
-)
-
--- Keep effects behind the menu controls.
-
-local HubGradient = Create(
+Create(
 	"UIGradient",
 	{
 		Color =
@@ -393,18 +495,18 @@ local HubGradient = Create(
 					ColorSequenceKeypoint.new(
 						0,
 						Color3.fromRGB(
-							18,
-							30,
-							53
+							16,
+							29,
+							51
 						)
 					),
 
 					ColorSequenceKeypoint.new(
-						0.45,
+						0.5,
 						Color3.fromRGB(
-							13,
+							11,
 							18,
-							32
+							31
 						)
 					),
 
@@ -412,8 +514,8 @@ local HubGradient = Create(
 						1,
 						Color3.fromRGB(
 							31,
-							16,
-							48
+							15,
+							47
 						)
 					)
 				}
@@ -424,120 +526,29 @@ local HubGradient = Create(
 	HubEffects
 )
 
-local Glow1 = Create(
-	"Frame",
-	{
-		Size =
-			UDim2.fromOffset(
-				400,
-				400
-			),
-
-		Position =
-			UDim2.new(
-				0.04,
-				-200,
-				0.02,
-				-200
-			),
-
-		BackgroundColor3 =
-			THEME.Purple,
-
-		BackgroundTransparency =
-			0.93,
-
-		BorderSizePixel = 0,
-
-		ZIndex = 11
-	},
-	HubEffects
-)
-
-Corner(
-	Glow1,
-	200
-)
-
-local Glow2 = Create(
-	"Frame",
-	{
-		Size =
-			UDim2.fromOffset(
-				460,
-				460
-			),
-
-		Position =
-			UDim2.new(
-				0.97,
-				-230,
-				0.92,
-				-230
-			),
-
-		BackgroundColor3 =
-			THEME.Cyan,
-
-		BackgroundTransparency =
-			0.94,
-
-		BorderSizePixel = 0,
-
-		ZIndex = 11
-	},
-	HubEffects
-)
-
-Corner(
-	Glow2,
-	230
-)
-
---============================================================
--- INTERNAL PARTICLES
---============================================================
-
-local BackgroundParticles = {}
-
-for i = 1, 24 do
-
-	local size =
-		math.random(
-			3,
-			9
-		)
-
-	local particle = Create(
+local HubGlowA =
+	Create(
 		"Frame",
 		{
 			Size =
 				UDim2.fromOffset(
-					size,
-					size
+					430,
+					430
 				),
 
 			Position =
 				UDim2.new(
-					math.random(),
-					0,
-					math.random(),
-					0
+					0.03,
+					-215,
+					0.02,
+					-215
 				),
 
 			BackgroundColor3 =
-				(i % 3 == 0)
-				and THEME.Purple
-				or
-				((i % 2 == 0)
-				and THEME.Cyan
-				or THEME.Blue),
+				THEME.Purple,
 
 			BackgroundTransparency =
-				math.random(
-					70,
-					90
-				) / 100,
+				0.95,
 
 			BorderSizePixel = 0,
 
@@ -546,140 +557,163 @@ for i = 1, 24 do
 		HubEffects
 	)
 
+Corner(
+	HubGlowA,
+	215
+)
+
+local HubGlowB =
+	Create(
+		"Frame",
+		{
+			Size =
+				UDim2.fromOffset(
+					450,
+					450
+				),
+
+			Position =
+				UDim2.new(
+					0.98,
+					-225,
+					0.93,
+					-225
+				),
+
+			BackgroundColor3 =
+				THEME.Cyan,
+
+			BackgroundTransparency =
+				0.96,
+
+			BorderSizePixel = 0,
+
+			ZIndex = 11
+		},
+		HubEffects
+	)
+
+Corner(
+	HubGlowB,
+	225
+)
+
+--============================================================
+-- HUB PARTICLES
+--============================================================
+
+local HubParticles = {}
+
+for i = 1,24 do
+
+	local size =
+		math.random(
+			3,
+			9
+		)
+
+	local particle =
+		Create(
+			"Frame",
+			{
+				Size =
+					UDim2.fromOffset(
+						size,
+						size
+					),
+
+				Position =
+					UDim2.new(
+						math.random(),
+						0,
+						math.random(),
+						0
+					),
+
+				BackgroundColor3 =
+					i % 3 == 0
+					and THEME.Purple
+					or
+					(
+						i % 2 == 0
+						and THEME.Cyan
+						or
+						THEME.Blue
+					),
+
+				BackgroundTransparency =
+					math.random(
+						72,
+						91
+					)
+					/ 100,
+
+				BorderSizePixel = 0,
+
+				ZIndex = 11
+			},
+			HubEffects
+		)
+
 	Corner(
 		particle,
 		size
 	)
 
 	table.insert(
-		BackgroundParticles,
+		HubParticles,
 		{
 			Object = particle,
+
+			X =
+				particle.Position.X.Scale,
+
+			Y =
+				particle.Position.Y.Scale,
+
+			Phase =
+				math.random()
+				*
+				math.pi
+				*
+				2,
 
 			Speed =
 				math.random(
 					4,
 					11
-				) / 10,
-
-			Phase =
-				math.random() *
-				math.pi *
-				2,
-
-			BaseX =
-				particle.Position.X.Scale,
-
-			BaseY =
-				particle.Position.Y.Scale
+				)
+				/
+				10
 		}
 	)
 end
 
 --============================================================
--- INTERNAL ORBIT RINGS
---============================================================
-
-local Ring1 = Create(
-	"Frame",
-	{
-		Size =
-			UDim2.fromOffset(
-				260,
-				260
-			),
-
-		Position =
-			UDim2.new(
-				0.96,
-				-130,
-				0.08,
-				-130
-			),
-
-		BackgroundTransparency = 1,
-
-		BorderSizePixel = 0,
-
-		ZIndex = 11
-	},
-	HubEffects
-)
-
-Corner(
-	Ring1,
-	130
-)
-
-Stroke(
-	Ring1,
-	THEME.Cyan,
-	1,
-	0.85
-)
-
-local Ring2 = Create(
-	"Frame",
-	{
-		Size =
-			UDim2.fromOffset(
-				170,
-				170
-			),
-
-		Position =
-			UDim2.new(
-				0.96,
-				-85,
-				0.08,
-				-85
-			),
-
-		BackgroundTransparency = 1,
-
-		BorderSizePixel = 0,
-
-		ZIndex = 11
-	},
-	HubEffects
-)
-
-Corner(
-	Ring2,
-	85
-)
-
-Stroke(
-	Ring2,
-	THEME.Purple,
-	1,
-	0.82
-)
-
---============================================================
 -- HUB TOP ACCENT
 --============================================================
 
-local HubAccent = Create(
-	"Frame",
-	{
-		Size =
-			UDim2.new(
-				1,
-				0,
-				0,
-				4
-			),
+local HubAccent =
+	Create(
+		"Frame",
+		{
+			Size =
+				UDim2.new(
+					1,
+					0,
+					0,
+					4
+				),
 
-		BackgroundColor3 =
-			THEME.Cyan,
+			BackgroundColor3 =
+				THEME.Cyan,
 
-		BorderSizePixel = 0,
+			BorderSizePixel = 0,
 
-		ZIndex = 30
-	},
-	Hub
-)
+			ZIndex = 30
+		},
+		Hub
+	)
 
 Corner(
 	HubAccent,
@@ -690,31 +724,32 @@ Corner(
 -- SIDEBAR
 --============================================================
 
-local Sidebar = Create(
-	"Frame",
-	{
-		Size =
-			UDim2.fromOffset(
-				185,
-				560
-			),
+local Sidebar =
+	Create(
+		"Frame",
+		{
+			Size =
+				UDim2.fromOffset(
+					185,
+					560
+				),
 
-		BackgroundColor3 =
-			Color3.fromRGB(
-				11,
-				14,
-				24
-			),
+			BackgroundColor3 =
+				Color3.fromRGB(
+					10,
+					13,
+					23
+				),
 
-		BackgroundTransparency =
-			0.05,
+			BackgroundTransparency =
+				0.04,
 
-		BorderSizePixel = 0,
+			BorderSizePixel = 0,
 
-		ZIndex = 30
-	},
-	Hub
-)
+			ZIndex = 30
+		},
+		Hub
+	)
 
 Corner(
 	Sidebar,
@@ -725,63 +760,65 @@ Corner(
 -- LOGO
 --============================================================
 
-local LogoGlow = Create(
-	"Frame",
-	{
-		Size =
-			UDim2.fromOffset(
-				82,
-				82
-			),
+local LogoGlow =
+	Create(
+		"Frame",
+		{
+			Size =
+				UDim2.fromOffset(
+					84,
+					84
+				),
 
-		Position =
-			UDim2.fromOffset(
-				20,
-				20
-			),
+			Position =
+				UDim2.fromOffset(
+					19,
+					19
+				),
 
-		BackgroundColor3 =
-			THEME.Cyan,
+			BackgroundColor3 =
+				THEME.Cyan,
 
-		BackgroundTransparency =
-			0.9,
+			BackgroundTransparency =
+				0.91,
 
-		BorderSizePixel = 0,
+			BorderSizePixel = 0,
 
-		ZIndex = 31
-	},
-	Sidebar
-)
+			ZIndex = 31
+		},
+		Sidebar
+	)
 
 Corner(
 	LogoGlow,
-	23
+	25
 )
 
-local LogoBox = Create(
-	"Frame",
-	{
-		Size =
-			UDim2.fromOffset(
-				62,
-				62
-			),
+local LogoBox =
+	Create(
+		"Frame",
+		{
+			Size =
+				UDim2.fromOffset(
+					63,
+					63
+				),
 
-		Position =
-			UDim2.fromOffset(
-				30,
-				30
-			),
+			Position =
+				UDim2.fromOffset(
+					30,
+					30
+				),
 
-		BackgroundColor3 =
-			THEME.Panel3,
+			BackgroundColor3 =
+				THEME.Panel3,
 
-		BorderSizePixel = 0,
+			BorderSizePixel = 0,
 
-		ZIndex = 32
-	},
-	Sidebar
-)
+			ZIndex = 32
+		},
+		Sidebar
+	)
 
 Corner(
 	LogoBox,
@@ -792,7 +829,7 @@ Stroke(
 	LogoBox,
 	THEME.Cyan,
 	1.5,
-	0.2
+	0.15
 )
 
 Create(
@@ -893,7 +930,7 @@ Create(
 	{
 		Size =
 			UDim2.fromOffset(
-				140,
+				145,
 				18
 			),
 
@@ -924,7 +961,7 @@ Create(
 )
 
 --============================================================
--- NAV BUTTONS
+-- NAV
 --============================================================
 
 local function CreateNavButton(
@@ -932,46 +969,47 @@ local function CreateNavButton(
 	y
 )
 
-	local button = Create(
-		"TextButton",
-		{
-			Size =
-				UDim2.fromOffset(
-					145,
-					44
-				),
+	local button =
+		Create(
+			"TextButton",
+			{
+				Size =
+					UDim2.fromOffset(
+						145,
+						44
+					),
 
-			Position =
-				UDim2.fromOffset(
-					20,
-					y
-				),
+				Position =
+					UDim2.fromOffset(
+						20,
+						y
+					),
 
-			BackgroundColor3 =
-				THEME.Panel2,
+				BackgroundColor3 =
+					THEME.Panel2,
 
-			BackgroundTransparency =
-				0.2,
+				BackgroundTransparency =
+					0.2,
 
-			Text = text,
+				Text = text,
 
-			TextColor3 =
-				THEME.SubText,
+				TextColor3 =
+					THEME.SubText,
 
-			TextSize = 12,
+				TextSize = 12,
 
-			Font =
-				Enum.Font.GothamBold,
+				Font =
+					Enum.Font.GothamBold,
 
-			TextXAlignment =
-				Enum.TextXAlignment.Left,
+				TextXAlignment =
+					Enum.TextXAlignment.Left,
 
-			AutoButtonColor = false,
+				AutoButtonColor = false,
 
-			ZIndex = 32
-		},
-		Sidebar
-	)
+				ZIndex = 32
+			},
+			Sidebar
+		)
 
 	Corner(
 		button,
@@ -1023,13 +1061,13 @@ Create(
 		BackgroundTransparency = 1,
 
 		Text =
-			"DONK ARCADE  •  v2.1",
+			"DONK ARCADE  •  v3.0",
 
 		TextColor3 =
 			Color3.fromRGB(
-				78,
-				88,
-				116
+				77,
+				89,
+				119
 			),
 
 		TextSize = 8,
@@ -1046,211 +1084,213 @@ Create(
 -- CONTENT
 --============================================================
 
-local Content = Create(
-	"Frame",
-	{
-		Size =
-			UDim2.new(
-				1,
-				-185,
-				1,
-				0
-			),
+local Content =
+	Create(
+		"Frame",
+		{
+			Size =
+				UDim2.new(
+					1,
+					-185,
+					1,
+					0
+				),
 
-		Position =
-			UDim2.fromOffset(
-				185,
-				0
-			),
+			Position =
+				UDim2.fromOffset(
+					185,
+					0
+				),
 
-		BackgroundTransparency = 1,
+			BackgroundTransparency = 1,
 
-		ZIndex = 30
-	},
-	Hub
-)
-
-Create(
-	"TextLabel",
-	{
-		Size =
-			UDim2.new(
-				1,
-				-70,
-				0,
-				38
-			),
-
-		Position =
-			UDim2.fromOffset(
-				30,
-				28
-			),
-
-		BackgroundTransparency = 1,
-
-		Text = "GAME LIBRARY",
-
-		TextColor3 =
-			THEME.Text,
-
-		TextSize = 27,
-
-		Font =
-			Enum.Font.GothamBlack,
-
-		TextXAlignment =
-			Enum.TextXAlignment.Left,
-
-		ZIndex = 31
-	},
-	Content
-)
-
-local HeaderSub = Create(
-	"TextLabel",
-	{
-		Size =
-			UDim2.new(
-				1,
-				-70,
-				0,
-				24
-			),
-
-		Position =
-			UDim2.fromOffset(
-				31,
-				65
-			),
-
-		BackgroundTransparency = 1,
-
-		Text =
-			"Choose something chaotic to play.",
-
-		TextColor3 =
-			THEME.SubText,
-
-		TextSize = 11,
-
-		Font =
-			Enum.Font.GothamMedium,
-
-		TextXAlignment =
-			Enum.TextXAlignment.Left,
-
-		ZIndex = 31
-	},
-	Content
-)
-
-local Header =
-	Content:FindFirstChild(
-		"TextLabel"
+			ZIndex = 30
+		},
+		Hub
 	)
 
-local GameCount = Create(
-	"TextLabel",
-	{
-		Size =
-			UDim2.fromOffset(
-				110,
-				24
-			),
+local Header =
+	Create(
+		"TextLabel",
+		{
+			Size =
+				UDim2.new(
+					1,
+					-70,
+					0,
+					38
+				),
 
-		Position =
-			UDim2.new(
-				1,
-				-135,
-				0,
-				34
-			),
+			Position =
+				UDim2.fromOffset(
+					30,
+					28
+				),
 
-		BackgroundTransparency = 1,
+			BackgroundTransparency = 1,
 
-		Text =
-			"1 PLAYABLE",
+			Text =
+				"GAME LIBRARY",
 
-		TextColor3 =
-			THEME.Cyan,
+			TextColor3 =
+				THEME.Text,
 
-		TextSize = 9,
+			TextSize = 27,
 
-		Font =
-			Enum.Font.GothamBold,
+			Font =
+				Enum.Font.GothamBlack,
 
-		TextXAlignment =
-			Enum.TextXAlignment.Right,
+			TextXAlignment =
+				Enum.TextXAlignment.Left,
 
-		ZIndex = 31
-	},
-	Content
-)
+			ZIndex = 31
+		},
+		Content
+	)
+
+local HeaderSub =
+	Create(
+		"TextLabel",
+		{
+			Size =
+				UDim2.new(
+					1,
+					-70,
+					0,
+					24
+				),
+
+			Position =
+				UDim2.fromOffset(
+					31,
+					65
+				),
+
+			BackgroundTransparency = 1,
+
+			Text =
+				"Choose something chaotic to play.",
+
+			TextColor3 =
+				THEME.SubText,
+
+			TextSize = 11,
+
+			Font =
+				Enum.Font.GothamMedium,
+
+			TextXAlignment =
+				Enum.TextXAlignment.Left,
+
+			ZIndex = 31
+		},
+		Content
+	)
+
+local GameCount =
+	Create(
+		"TextLabel",
+		{
+			Size =
+				UDim2.fromOffset(
+					110,
+					24
+				),
+
+			Position =
+				UDim2.new(
+					1,
+					-135,
+					0,
+					34
+				),
+
+			BackgroundTransparency = 1,
+
+			Text =
+				"2 PLAYABLE",
+
+			TextColor3 =
+				THEME.Cyan,
+
+			TextSize = 9,
+
+			Font =
+				Enum.Font.GothamBold,
+
+			TextXAlignment =
+				Enum.TextXAlignment.Right,
+
+			ZIndex = 31
+		},
+		Content
+	)
 
 --============================================================
--- GAME SCROLLER
+-- GAME SCROLL
 --============================================================
 
-local GamesContainer = Create(
-	"ScrollingFrame",
-	{
-		Size =
-			UDim2.new(
-				1,
-				-45,
-				1,
-				-115
-			),
+local GamesContainer =
+	Create(
+		"ScrollingFrame",
+		{
+			Size =
+				UDim2.new(
+					1,
+					-45,
+					1,
+					-115
+				),
 
-		Position =
-			UDim2.fromOffset(
-				22,
-				100
-			),
+			Position =
+				UDim2.fromOffset(
+					22,
+					100
+				),
 
-		BackgroundTransparency = 1,
+			BackgroundTransparency = 1,
 
-		BorderSizePixel = 0,
+			BorderSizePixel = 0,
 
-		ScrollBarThickness = 3,
+			ScrollBarThickness = 3,
 
-		ScrollBarImageColor3 =
-			THEME.Cyan,
+			ScrollBarImageColor3 =
+				THEME.Cyan,
 
-		CanvasSize =
-			UDim2.new(
-				0,
-				0,
-				0,
-				0
-			),
+			CanvasSize =
+				UDim2.new(
+					0,
+					0,
+					0,
+					0
+				),
 
-		ZIndex = 31
-	},
-	Content
-)
+			ZIndex = 32
+		},
+		Content
+	)
 
-local GamesLayout = Create(
-	"UIGridLayout",
-	{
-		CellSize =
-			UDim2.fromOffset(
-				286,
-				178
-			),
+local GamesLayout =
+	Create(
+		"UIGridLayout",
+		{
+			CellSize =
+				UDim2.fromOffset(
+					286,
+					178
+				),
 
-		CellPadding =
-			UDim2.fromOffset(
-				14,
-				14
-			),
+			CellPadding =
+				UDim2.fromOffset(
+					14,
+					14
+				),
 
-		SortOrder =
-			Enum.SortOrder.LayoutOrder
-	},
-	GamesContainer
-)
+			SortOrder =
+				Enum.SortOrder.LayoutOrder
+		},
+		GamesContainer
+	)
 
 --============================================================
 -- GAME REGISTRY
@@ -1282,22 +1322,22 @@ local Games = {
 
 	{
 		Name =
-			"COMING SOON",
+			"LOWER YOUR TONE",
 
 		Description =
-			"Another chaotic game will be added here.",
+			"Your microphone is the enemy. Keep your voice under control.",
 
 		Category =
-			"NEW GAME",
+			"AUDIO",
 
 		Status =
-			"SOON",
+			"PLAYABLE",
 
 		Accent =
 			THEME.Purple,
 
 		Icon =
-			"＋",
+			"◉",
 
 		LayoutOrder = 2
 	},
@@ -1307,7 +1347,7 @@ local Games = {
 			"COMING SOON",
 
 		Description =
-			"A new challenge is being prepared.",
+			"Another chaotic game will be added here.",
 
 		Category =
 			"NEW GAME",
@@ -1329,7 +1369,7 @@ local Games = {
 			"COMING SOON",
 
 		Description =
-			"More games coming to the arcade.",
+			"More games are being prepared.",
 
 		Category =
 			"NEW GAME",
@@ -1348,39 +1388,25 @@ local Games = {
 }
 
 --============================================================
--- COLOR PANIC
+-- COLOR PANIC GAME
 --============================================================
 
 local function LaunchColorPanic()
 
-	Hub.Visible = false
+	Hub.Visible =
+		false
 
 	--========================================================
 	-- SETTINGS
 	--========================================================
 
 	local SCAN_DISTANCE = 2500
-
 	local MIN_FAMILY_PARTS = 5
 
 	local TOUCH_INTERVAL = 0.05
 
-	--========================================================
-	-- ADVANCED AFK SYSTEM
-	--========================================================
-
-	-- Player must leave this horizontal radius
-	-- to count as meaningful movement.
-
-	local AFK_CAMP_RADIUS = 6
-
-	-- Total allowed stationary/camping time.
-
 	local AFK_LIMIT = 6
-
-	-- Warning begins after this many seconds.
-
-	local AFK_WARNING_START = 2
+	local AFK_CAMP_RADIUS = 6
 
 	local TIMED_OPTIONS = {
 		60,
@@ -1409,72 +1435,58 @@ local function LaunchColorPanic()
 	local LOSS_SOUND_ID =
 		"rbxassetid://8090403894"
 
-	--========================================================
-	-- STATE
-	--========================================================
-
 	local currentModeIndex = 1
-
 	local optionIndex = 1
 
 	local running = false
-
 	local selecting = false
 
 	local roundEnd = nil
-
 	local roundToken = 0
 
 	local dangerFamilies = {}
-
 	local dangerCount = 1
 
 	local lastDangerCheck = 0
 
-	--========================================================
-	-- ADVANCED AFK STATE
-	--========================================================
-
 	local afkAnchorPosition = nil
-
 	local afkTimerStart = nil
-
-	local afkWarningActive = false
 
 	--========================================================
 	-- GAME WINDOW
 	--========================================================
 
-	local GameGui = Create(
-		"Frame",
-		{
-			Name = "ColorPanic",
+	local GameGui =
+		Create(
+			"Frame",
+			{
+				Name = "ColorPanic",
 
-			Size =
-				UDim2.fromOffset(
-					500,
-					535
-				),
+				Size =
+					UDim2.fromOffset(
+						500,
+						535
+					),
 
-			Position =
-				UDim2.new(
-					0.5,
-					-250,
-					0.5,
-					-267
-				),
+				Position =
+					UDim2.new(
+						0.5,
+						-250,
+						0.5,
+						-267
+					),
 
-			BackgroundColor3 =
-				THEME.Panel,
+				BackgroundColor3 =
+					THEME.Panel,
 
-			BorderSizePixel = 0,
+				BorderSizePixel = 0,
 
-			ClipsDescendants = true,
+				ClipsDescendants = true,
 
-			ZIndex = 50
-		},
-		ScreenGui
-	)
+				ZIndex = 50
+			},
+			ScreenGui
+		)
 
 	Corner(
 		GameGui,
@@ -1489,128 +1501,89 @@ local function LaunchColorPanic()
 	)
 
 	--========================================================
-	-- GAME INTERNAL EFFECT
+	-- INTERNAL EFFECTS
 	--========================================================
 
-	local GameEffects = Create(
-		"Frame",
-		{
-			Size =
-				UDim2.fromScale(
-					1,
-					1
-				),
+	local Effects =
+		Create(
+			"Frame",
+			{
+				Size =
+					UDim2.fromScale(
+						1,
+						1
+					),
 
-			BackgroundTransparency = 1,
+				BackgroundTransparency = 1,
 
-			ClipsDescendants = true,
+				ClipsDescendants = true,
 
-			BorderSizePixel = 0,
+				ZIndex = 51
+			},
+			GameGui
+		)
 
-			ZIndex = 51
-		},
-		GameGui
-	)
+	local effectGlow =
+		Create(
+			"Frame",
+			{
+				Size =
+					UDim2.fromOffset(
+						350,
+						350
+					),
 
-	Create(
-		"UIGradient",
-		{
-			Color =
-				ColorSequence.new(
-					{
-						ColorSequenceKeypoint.new(
-							0,
-							Color3.fromRGB(
-								14,
-								31,
-								50
-							)
-						),
+				Position =
+					UDim2.new(
+						1,
+						-175,
+						-0.08,
+						-175
+					),
 
-						ColorSequenceKeypoint.new(
-							0.5,
-							Color3.fromRGB(
-								10,
-								17,
-								30
-							)
-						),
+				BackgroundColor3 =
+					THEME.Purple,
 
-						ColorSequenceKeypoint.new(
-							1,
-							Color3.fromRGB(
-								35,
-								16,
-								50
-							)
-						)
-					}
-				),
+				BackgroundTransparency =
+					0.96,
 
-			Rotation = 20
-		},
-		GameEffects
-	)
+				BorderSizePixel = 0,
 
-	local GameGlow = Create(
-		"Frame",
-		{
-			Size =
-				UDim2.fromOffset(
-					300,
-					300
-				),
-
-			Position =
-				UDim2.new(
-					1,
-					-150,
-					0,
-					-80
-				),
-
-			BackgroundColor3 =
-				THEME.Purple,
-
-			BackgroundTransparency =
-				0.95,
-
-			BorderSizePixel = 0,
-
-			ZIndex = 51
-		},
-		GameEffects
-	)
+				ZIndex = 51
+			},
+			Effects
+		)
 
 	Corner(
-		GameGlow,
-		150
+		effectGlow,
+		175
 	)
 
 	--========================================================
-	-- GAME ACCENT
+	-- ACCENT
 	--========================================================
 
-	local GameAccent = Create(
-		"Frame",
-		{
-			Size =
-				UDim2.new(
-					1,
-					0,
-					0,
-					5
-				),
+	local GameAccent =
+		Create(
+			"Frame",
+			{
+				Size =
+					UDim2.new(
+						1,
+						0,
+						0,
+						5
+					),
 
-			BackgroundColor3 =
-				THEME.Cyan,
+				BackgroundColor3 =
+					THEME.Cyan,
 
-			BorderSizePixel = 0,
+				BorderSizePixel = 0,
 
-			ZIndex = 70
-		},
-		GameGui
-	)
+				ZIndex = 70
+			},
+			GameGui
+		)
 
 	Corner(
 		GameAccent,
@@ -1621,43 +1594,44 @@ local function LaunchColorPanic()
 	-- HEADER
 	--========================================================
 
-	local Title = Create(
-		"TextLabel",
-		{
-			Size =
-				UDim2.new(
-					1,
-					-120,
-					0,
-					35
-				),
+	local Title =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.new(
+						1,
+						-120,
+						0,
+						35
+					),
 
-			Position =
-				UDim2.fromOffset(
-					22,
-					16
-				),
+				Position =
+					UDim2.fromOffset(
+						22,
+						16
+					),
 
-			BackgroundTransparency = 1,
+				BackgroundTransparency = 1,
 
-			Text =
-				"COLOR PANIC!",
+				Text =
+					"COLOR PANIC!",
 
-			TextColor3 =
-				THEME.Text,
+				TextColor3 =
+					THEME.Text,
 
-			TextSize = 25,
+				TextSize = 25,
 
-			Font =
-				Enum.Font.GothamBlack,
+				Font =
+					Enum.Font.GothamBlack,
 
-			TextXAlignment =
-				Enum.TextXAlignment.Left,
+				TextXAlignment =
+					Enum.TextXAlignment.Left,
 
-			ZIndex = 71
-		},
-		GameGui
-	)
+				ZIndex = 71
+			},
+			GameGui
+		)
 
 	Create(
 		"TextLabel",
@@ -1697,84 +1671,88 @@ local function LaunchColorPanic()
 		GameGui
 	)
 
-	local BackButton = Create(
-		"TextButton",
-		{
-			Size =
-				UDim2.fromOffset(
-					34,
-					34
-				),
+	local BackButton =
+		Create(
+			"TextButton",
+			{
+				Size =
+					UDim2.fromOffset(
+						34,
+						34
+					),
 
-			Position =
-				UDim2.new(
-					1,
-					-90,
-					0,
-					18
-				),
+				Position =
+					UDim2.new(
+						1,
+						-90,
+						0,
+						18
+					),
 
-			BackgroundColor3 =
-				THEME.Panel3,
+				BackgroundColor3 =
+					THEME.Panel3,
 
-			Text = "‹",
+				Text =
+					"‹",
 
-			TextColor3 =
-				THEME.Text,
+				TextColor3 =
+					THEME.Text,
 
-			TextSize = 24,
+				TextSize = 24,
 
-			Font =
-				Enum.Font.GothamBold,
+				Font =
+					Enum.Font.GothamBold,
 
-			AutoButtonColor = false,
+				AutoButtonColor = false,
 
-			ZIndex = 71
-		},
-		GameGui
-	)
+				ZIndex = 72
+			},
+			GameGui
+		)
 
 	Corner(
 		BackButton,
 		10
 	)
 
-	local CloseButton = Create(
-		"TextButton",
-		{
-			Size =
-				UDim2.fromOffset(
-					34,
-					34
-				),
+	local CloseButton =
+		Create(
+			"TextButton",
+			{
+				Size =
+					UDim2.fromOffset(
+						34,
+						34
+					),
 
-			Position =
-				UDim2.new(
-					1,
-					-48,
-					0,
-					18
-				),
+				Position =
+					UDim2.new(
+						1,
+						-48,
+						0,
+						18
+					),
 
-			BackgroundColor3 =
-				THEME.Panel3,
+				BackgroundColor3 =
+					THEME.Panel3,
 
-			Text = "×",
+				Text =
+					"×",
 
-			TextColor3 =
-				THEME.Text,
+				TextColor3 =
+					THEME.Text,
 
-			TextSize = 23,
+				TextSize = 23,
 
-			Font =
-				Enum.Font.GothamBold,
+				Font =
+					Enum.Font.GothamBold,
 
-			AutoButtonColor = false,
+				AutoButtonColor = false,
 
-			ZIndex = 71
-		},
-		GameGui
-	)
+				ZIndex = 72
+			},
+			GameGui
+		)
 
 	Corner(
 		CloseButton,
@@ -1782,7 +1760,7 @@ local function LaunchColorPanic()
 	)
 
 	--========================================================
-	-- MODE
+	-- MODE CONTROLS
 	--========================================================
 
 	Create(
@@ -1817,119 +1795,124 @@ local function LaunchColorPanic()
 		GameGui
 	)
 
-	local ModeLeft = Create(
-		"TextButton",
-		{
-			Size =
-				UDim2.fromOffset(
-					34,
-					34
-				),
+	local ModeLeft =
+		Create(
+			"TextButton",
+			{
+				Size =
+					UDim2.fromOffset(
+						34,
+						34
+					),
 
-			Position =
-				UDim2.fromOffset(
-					72,
-					74
-				),
+				Position =
+					UDim2.fromOffset(
+						72,
+						74
+					),
 
-			BackgroundColor3 =
-				THEME.Panel2,
+				BackgroundColor3 =
+					THEME.Panel2,
 
-			Text = "‹",
+				Text =
+					"‹",
 
-			TextColor3 =
-				THEME.Text,
+				TextColor3 =
+					THEME.Text,
 
-			TextSize = 22,
+				TextSize = 22,
 
-			Font =
-				Enum.Font.GothamBold,
+				Font =
+					Enum.Font.GothamBold,
 
-			AutoButtonColor = false,
+				AutoButtonColor = false,
 
-			ZIndex = 71
-		},
-		GameGui
-	)
+				ZIndex = 72
+			},
+			GameGui
+		)
 
 	Corner(
 		ModeLeft,
 		10
 	)
 
-	local ModeLabel = Create(
-		"TextLabel",
-		{
-			Size =
-				UDim2.fromOffset(
-					270,
-					34
-				),
+	local ModeLabel =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.fromOffset(
+						270,
+						34
+					),
 
-			Position =
-				UDim2.fromOffset(
-					107,
-					74
-				),
+				Position =
+					UDim2.fromOffset(
+						107,
+						74
+					),
 
-			BackgroundColor3 =
-				THEME.Panel2,
+				BackgroundColor3 =
+					THEME.Panel2,
 
-			Text =
-				"Timed",
+				Text =
+					"Timed",
 
-			TextColor3 =
-				THEME.Text,
+				TextColor3 =
+					THEME.Text,
 
-			TextSize = 14,
+				TextSize = 14,
 
-			Font =
-				Enum.Font.GothamBlack,
+				Font =
+					Enum.Font.GothamBlack,
 
-			ZIndex = 71
-		},
-		GameGui
-	)
+				ZIndex = 72
+			},
+			GameGui
+		)
 
 	Corner(
 		ModeLabel,
 		10
 	)
 
-	local ModeRight = Create(
-		"TextButton",
-		{
-			Size =
-				UDim2.fromOffset(
-					34,
-					34
-				),
+	local ModeRight =
+		Create(
+			"TextButton",
+			{
+				Size =
+					UDim2.fromOffset(
+						34,
+						34
+					),
 
-			Position =
-				UDim2.fromOffset(
-					384,
-					74
-				),
+				Position =
+					UDim2.fromOffset(
+						384,
+						74
+					),
 
-			BackgroundColor3 =
-				THEME.Panel2,
+				BackgroundColor3 =
+					THEME.Panel2,
 
-			Text = "›",
+				Text =
+					"›",
 
-			TextColor3 =
-				THEME.Text,
+				TextColor3 =
+					THEME.Text,
 
-			TextSize = 22,
+				TextSize = 22,
 
-			Font =
-				Enum.Font.GothamBold,
+				Font =
+					Enum.Font.GothamBold,
 
-			AutoButtonColor = false,
+				AutoButtonColor = false,
 
-			ZIndex = 71
-		},
-		GameGui
-	)
+				ZIndex = 72
+			},
+			GameGui
+		)
 
 	Corner(
 		ModeRight,
@@ -1957,7 +1940,8 @@ local function LaunchColorPanic()
 
 			BackgroundTransparency = 1,
 
-			Text = "OPTION",
+			Text =
+				"OPTION",
 
 			TextColor3 =
 				THEME.SubText,
@@ -1972,119 +1956,124 @@ local function LaunchColorPanic()
 		GameGui
 	)
 
-	local OptionLeft = Create(
-		"TextButton",
-		{
-			Size =
-				UDim2.fromOffset(
-					34,
-					34
-				),
+	local OptionLeft =
+		Create(
+			"TextButton",
+			{
+				Size =
+					UDim2.fromOffset(
+						34,
+						34
+					),
 
-			Position =
-				UDim2.fromOffset(
-					72,
-					113
-				),
+				Position =
+					UDim2.fromOffset(
+						72,
+						113
+					),
 
-			BackgroundColor3 =
-				THEME.Panel2,
+				BackgroundColor3 =
+					THEME.Panel2,
 
-			Text = "‹",
+				Text =
+					"‹",
 
-			TextColor3 =
-				THEME.Text,
+				TextColor3 =
+					THEME.Text,
 
-			TextSize = 22,
+				TextSize = 22,
 
-			Font =
-				Enum.Font.GothamBold,
+				Font =
+					Enum.Font.GothamBold,
 
-			AutoButtonColor = false,
+				AutoButtonColor = false,
 
-			ZIndex = 71
-		},
-		GameGui
-	)
+				ZIndex = 72
+			},
+			GameGui
+		)
 
 	Corner(
 		OptionLeft,
 		10
 	)
 
-	local OptionLabel = Create(
-		"TextLabel",
-		{
-			Size =
-				UDim2.fromOffset(
-					270,
-					34
-				),
+	local OptionLabel =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.fromOffset(
+						270,
+						34
+					),
 
-			Position =
-				UDim2.fromOffset(
-					107,
-					113
-				),
+				Position =
+					UDim2.fromOffset(
+						107,
+						113
+					),
 
-			BackgroundColor3 =
-				THEME.Panel2,
+				BackgroundColor3 =
+					THEME.Panel2,
 
-			Text =
-				"60 SECONDS",
+				Text =
+					"60 SECONDS",
 
-			TextColor3 =
-				THEME.Text,
+				TextColor3 =
+					THEME.Text,
 
-			TextSize = 13,
+				TextSize = 13,
 
-			Font =
-				Enum.Font.GothamBlack,
+				Font =
+					Enum.Font.GothamBlack,
 
-			ZIndex = 71
-		},
-		GameGui
-	)
+				ZIndex = 72
+			},
+			GameGui
+		)
 
 	Corner(
 		OptionLabel,
 		10
 	)
 
-	local OptionRight = Create(
-		"TextButton",
-		{
-			Size =
-				UDim2.fromOffset(
-					34,
-					34
-				),
+	local OptionRight =
+		Create(
+			"TextButton",
+			{
+				Size =
+					UDim2.fromOffset(
+						34,
+						34
+					),
 
-			Position =
-				UDim2.fromOffset(
-					384,
-					113
-				),
+				Position =
+					UDim2.fromOffset(
+						384,
+						113
+					),
 
-			BackgroundColor3 =
-				THEME.Panel2,
+				BackgroundColor3 =
+					THEME.Panel2,
 
-			Text = "›",
+				Text =
+					"›",
 
-			TextColor3 =
-				THEME.Text,
+				TextColor3 =
+					THEME.Text,
 
-			TextSize = 22,
+				TextSize = 22,
 
-			Font =
-				Enum.Font.GothamBold,
+				Font =
+					Enum.Font.GothamBold,
 
-			AutoButtonColor = false,
+				AutoButtonColor = false,
 
-			ZIndex = 71
-		},
-		GameGui
-	)
+				ZIndex = 72
+			},
+			GameGui
+		)
 
 	Corner(
 		OptionRight,
@@ -2095,77 +2084,80 @@ local function LaunchColorPanic()
 	-- STATUS
 	--========================================================
 
-	local Status = Create(
-		"TextLabel",
-		{
-			Size =
-				UDim2.new(
-					1,
-					-44,
-					0,
-					22
-				),
+	local Status =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.new(
+						1,
+						-44,
+						0,
+						22
+					),
 
-			Position =
-				UDim2.fromOffset(
-					22,
-					152
-				),
+				Position =
+					UDim2.fromOffset(
+						22,
+						152
+					),
 
-			BackgroundTransparency = 1,
+				BackgroundTransparency = 1,
 
-			Text = "READY",
+				Text =
+					"READY",
 
-			TextColor3 =
-				THEME.SubText,
+				TextColor3 =
+					THEME.SubText,
 
-			TextSize = 11,
+				TextSize = 11,
 
-			Font =
-				Enum.Font.GothamBold,
+				Font =
+					Enum.Font.GothamBold,
 
-			TextXAlignment =
-				Enum.TextXAlignment.Center,
+				TextXAlignment =
+					Enum.TextXAlignment.Center,
 
-			ZIndex = 71
-		},
-		GameGui
-	)
+				ZIndex = 72
+			},
+			GameGui
+		)
 
 	--========================================================
 	-- DANGER FRAME
 	--========================================================
 
-	local DangerFrame = Create(
-		"Frame",
-		{
-			Size =
-				UDim2.new(
-					1,
-					-44,
-					0,
-					177
-				),
+	local DangerFrame =
+		Create(
+			"Frame",
+			{
+				Size =
+					UDim2.new(
+						1,
+						-44,
+						0,
+						177
+					),
 
-			Position =
-				UDim2.fromOffset(
-					22,
-					176
-				),
+				Position =
+					UDim2.fromOffset(
+						22,
+						176
+					),
 
-			BackgroundColor3 =
-				Color3.fromRGB(
-					8,
-					11,
-					20
-				),
+				BackgroundColor3 =
+					Color3.fromRGB(
+						7,
+						10,
+						19
+					),
 
-			BorderSizePixel = 0,
+				BorderSizePixel = 0,
 
-			ZIndex = 71
-		},
-		GameGui
-	)
+				ZIndex = 71
+			},
+			GameGui
+		)
 
 	Corner(
 		DangerFrame,
@@ -2217,36 +2209,33 @@ local function LaunchColorPanic()
 		DangerFrame
 	)
 
-	--========================================================
-	-- SINGLE DISPLAY
-	--========================================================
+	local SingleColor =
+		Create(
+			"Frame",
+			{
+				Size =
+					UDim2.fromOffset(
+						82,
+						82
+					),
 
-	local SingleColor = Create(
-		"Frame",
-		{
-			Size =
-				UDim2.fromOffset(
-					82,
-					82
-				),
+				Position =
+					UDim2.new(
+						0.5,
+						-41,
+						0,
+						34
+					),
 
-			Position =
-				UDim2.new(
-					0.5,
-					-41,
-					0,
-					34
-				),
+				BackgroundColor3 =
+					THEME.Panel3,
 
-			BackgroundColor3 =
-				THEME.Panel3,
+				BorderSizePixel = 0,
 
-			BorderSizePixel = 0,
-
-			ZIndex = 72
-		},
-		DangerFrame
-	)
+				ZIndex = 73
+			},
+			DangerFrame
+		)
 
 	Corner(
 		SingleColor,
@@ -2260,126 +2249,128 @@ local function LaunchColorPanic()
 		0.2
 	)
 
-	local SingleColorName = Create(
-		"TextLabel",
-		{
-			Size =
-				UDim2.new(
-					1,
-					-20,
-					0,
-					22
-				),
+	local SingleColorName =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.new(
+						1,
+						-20,
+						0,
+						22
+					),
 
-			Position =
-				UDim2.new(
-					0,
-					10,
-					1,
-					-31
-				),
+				Position =
+					UDim2.new(
+						0,
+						10,
+						1,
+						-31
+					),
 
-			BackgroundTransparency = 1,
+				BackgroundTransparency = 1,
 
-			Text =
-				"WAITING",
+				Text =
+					"WAITING",
 
-			TextColor3 =
-				THEME.Text,
+				TextColor3 =
+					THEME.Text,
 
-			TextSize = 10,
+				TextSize = 10,
 
-			Font =
-				Enum.Font.GothamBlack,
+				Font =
+					Enum.Font.GothamBlack,
 
-			ZIndex = 72
-		},
-		DangerFrame
-	)
+				ZIndex = 73
+			},
+			DangerFrame
+		)
 
 	--========================================================
-	-- HARD MULTI DISPLAY
+	-- MULTI COLORS
 	--========================================================
 
-	local MultiColor = Create(
-		"Frame",
-		{
-			Size =
-				UDim2.new(
-					1,
-					-28,
-					1,
-					-40
-				),
-
-			Position =
-				UDim2.fromOffset(
-					14,
-					34
-				),
-
-			BackgroundTransparency = 1,
-
-			Visible = false,
-
-			ZIndex = 72
-		},
-		DangerFrame
-	)
-
-	local MultiGrid = Create(
-		"UIGridLayout",
-		{
-			CellSize =
-				UDim2.fromOffset(
-					88,
-					38
-				),
-
-			CellPadding =
-				UDim2.fromOffset(
-					7,
-					7
-				),
-
-			FillDirectionMaxCells = 3,
-
-			HorizontalAlignment =
-				Enum.HorizontalAlignment.Center,
-
-			VerticalAlignment =
-				Enum.VerticalAlignment.Top,
-
-			SortOrder =
-				Enum.SortOrder.LayoutOrder
-		},
-		MultiColor
-	)
-
-	local DangerSlots = {}
-
-	for i = 1, 9 do
-
-		local slot = Create(
+	local MultiColor =
+		Create(
 			"Frame",
 			{
 				Size =
-					UDim2.fromOffset(
-						88,
-						38
+					UDim2.new(
+						1,
+						-28,
+						1,
+						-40
 					),
 
-				BackgroundColor3 =
-					THEME.Panel2,
+				Position =
+					UDim2.fromOffset(
+						14,
+						34
+					),
 
-				BorderSizePixel = 0,
+				BackgroundTransparency = 1,
 
 				Visible = false,
 
 				ZIndex = 73
 			},
+			DangerFrame
+		)
+
+	local MultiGrid =
+		Create(
+			"UIGridLayout",
+			{
+				CellSize =
+					UDim2.fromOffset(
+						88,
+						38
+					),
+
+				CellPadding =
+					UDim2.fromOffset(
+						7,
+						7
+					),
+
+				FillDirectionMaxCells =
+					3,
+
+				HorizontalAlignment =
+					Enum.HorizontalAlignment.Center,
+
+				VerticalAlignment =
+					Enum.VerticalAlignment.Top
+			},
 			MultiColor
 		)
+
+	local DangerSlots = {}
+
+	for i = 1,9 do
+
+		local slot =
+			Create(
+				"Frame",
+				{
+					Size =
+						UDim2.fromOffset(
+							88,
+							38
+						),
+
+					BackgroundColor3 =
+						THEME.Panel2,
+
+					BorderSizePixel = 0,
+
+					Visible = false,
+
+					ZIndex = 74
+				},
+				MultiColor
+			)
 
 		Corner(
 			slot,
@@ -2393,72 +2384,75 @@ local function LaunchColorPanic()
 			0.45
 		)
 
-		local dot = Create(
-			"Frame",
-			{
-				Size =
-					UDim2.fromOffset(
-						22,
-						22
-					),
+		local dot =
+			Create(
+				"Frame",
+				{
+					Size =
+						UDim2.fromOffset(
+							22,
+							22
+						),
 
-				Position =
-					UDim2.fromOffset(
-						7,
-						8
-					),
+					Position =
+						UDim2.fromOffset(
+							7,
+							8
+						),
 
-				BackgroundColor3 =
-					THEME.Panel3,
+					BackgroundColor3 =
+						THEME.Panel3,
 
-				BorderSizePixel = 0,
+					BorderSizePixel = 0,
 
-				ZIndex = 74
-			},
-			slot
-		)
+					ZIndex = 75
+				},
+				slot
+			)
 
 		Corner(
 			dot,
 			7
 		)
 
-		local label = Create(
-			"TextLabel",
-			{
-				Size =
-					UDim2.new(
-						1,
-						-35,
-						1,
-						0
-					),
+		local label =
+			Create(
+				"TextLabel",
+				{
+					Size =
+						UDim2.new(
+							1,
+							-35,
+							1,
+							0
+						),
 
-				Position =
-					UDim2.fromOffset(
-						33,
-						0
-					),
+					Position =
+						UDim2.fromOffset(
+							33,
+							0
+						),
 
-				BackgroundTransparency = 1,
+					BackgroundTransparency = 1,
 
-				Text = "—",
+					Text =
+						"—",
 
-				TextColor3 =
-					THEME.Text,
+					TextColor3 =
+						THEME.Text,
 
-				TextSize = 8,
+					TextSize = 8,
 
-				Font =
-					Enum.Font.GothamBold,
+					Font =
+						Enum.Font.GothamBold,
 
-				TextXAlignment =
-					Enum.TextXAlignment.Left,
+					TextXAlignment =
+						Enum.TextXAlignment.Left,
 
-				ZIndex = 74
-			},
-			slot
-		)
+					ZIndex = 75
+				},
+				slot
+			)
 
 		DangerSlots[i] = {
 			Frame = slot,
@@ -2471,140 +2465,136 @@ local function LaunchColorPanic()
 	-- AFK WARNING
 	--========================================================
 
-	local AFKWarning = Create(
-		"TextLabel",
-		{
-			Size =
-				UDim2.new(
-					1,
-					-44,
-					0,
-					22
-				),
+	local AFKWarning =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.new(
+						1,
+						-44,
+						0,
+						22
+					),
 
-			Position =
-				UDim2.fromOffset(
-					22,
-					355
-				),
+				Position =
+					UDim2.fromOffset(
+						22,
+						355
+					),
 
-			BackgroundTransparency = 1,
+				BackgroundTransparency = 1,
 
-			Text = "",
+				Text = "",
 
-			TextColor3 =
-				THEME.Yellow,
+				TextColor3 =
+					THEME.Yellow,
 
-			TextSize = 10,
+				TextSize = 10,
 
-			Font =
-				Enum.Font.GothamBlack,
+				Font =
+					Enum.Font.GothamBlack,
 
-			TextXAlignment =
-				Enum.TextXAlignment.Center,
+				TextXAlignment =
+					Enum.TextXAlignment.Center,
 
-			ZIndex = 71
-		},
-		GameGui
-	)
+				ZIndex = 72
+			},
+			GameGui
+		)
 
 	--========================================================
 	-- TIMER
 	--========================================================
 
-	local TimerLabel = Create(
-		"TextLabel",
-		{
-			Size =
-				UDim2.new(
-					1,
-					-44,
-					0,
-					40
-				),
+	local TimerLabel =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.new(
+						1,
+						-44,
+						0,
+						40
+					),
 
-			Position =
-				UDim2.fromOffset(
-					22,
-					379
-				),
+				Position =
+					UDim2.fromOffset(
+						22,
+						379
+					),
 
-			BackgroundColor3 =
-				THEME.Panel2,
+				BackgroundColor3 =
+					THEME.Panel2,
 
-			Text =
-				"READY",
+				Text =
+					"READY",
 
-			TextColor3 =
-				THEME.Text,
+				TextColor3 =
+					THEME.Text,
 
-			TextSize = 21,
+				TextSize = 21,
 
-			Font =
-				Enum.Font.GothamBlack,
+				Font =
+					Enum.Font.GothamBlack,
 
-			ZIndex = 71
-		},
-		GameGui
-	)
+				ZIndex = 72
+			},
+			GameGui
+		)
 
 	Corner(
 		TimerLabel,
 		13
 	)
 
-	Stroke(
-		TimerLabel,
-		THEME.Border,
-		1,
-		0.4
-	)
-
 	--========================================================
-	-- START
+	-- START BUTTON
 	--========================================================
 
-	local StartButton = Create(
-		"TextButton",
-		{
-			Size =
-				UDim2.new(
-					1,
-					-44,
-					0,
-					42
-				),
+	local StartButton =
+		Create(
+			"TextButton",
+			{
+				Size =
+					UDim2.new(
+						1,
+						-44,
+						0,
+						42
+					),
 
-			Position =
-				UDim2.fromOffset(
-					22,
-					426
-				),
+				Position =
+					UDim2.fromOffset(
+						22,
+						426
+					),
 
-			BackgroundColor3 =
-				THEME.Cyan,
+				BackgroundColor3 =
+					THEME.Cyan,
 
-			Text =
-				"START ROUND",
+				Text =
+					"START ROUND",
 
-			TextColor3 =
-				Color3.fromRGB(
-					5,
-					12,
-					20
-				),
+				TextColor3 =
+					Color3.fromRGB(
+						4,
+						10,
+						18
+					),
 
-			TextSize = 13,
+				TextSize = 13,
 
-			Font =
-				Enum.Font.GothamBlack,
+				Font =
+					Enum.Font.GothamBlack,
 
-			AutoButtonColor = false,
+				AutoButtonColor = false,
 
-			ZIndex = 71
-		},
-		GameGui
-	)
+				ZIndex = 72
+			},
+			GameGui
+		)
 
 	Corner(
 		StartButton,
@@ -2632,116 +2622,13 @@ local function LaunchColorPanic()
 							THEME.Purple
 						)
 					}
-				),
-
-			Rotation = 0
+				)
 		},
 		StartButton
 	)
 
 	--========================================================
-	-- FOOTER
-	--========================================================
-
-	Create(
-		"TextLabel",
-		{
-			Size =
-				UDim2.new(
-					1,
-					-44,
-					0,
-					18
-				),
-
-			Position =
-				UDim2.fromOffset(
-					22,
-					475
-				),
-
-			BackgroundTransparency = 1,
-
-			Text =
-				"KEEP MOVING  •  LEAVE YOUR CAMP ZONE",
-
-			TextColor3 =
-				Color3.fromRGB(
-					82,
-					94,
-					125
-				),
-
-			TextSize = 8,
-
-			Font =
-				Enum.Font.GothamBold,
-
-			ZIndex = 71
-		},
-		GameGui
-	)
-
-	--========================================================
-	-- SOUNDS
-	--========================================================
-
-	local SoundFolder = Create(
-		"Folder",
-		{
-			Name =
-				"ColorPanicSounds"
-		},
-		SoundService
-	)
-
-	local WinSound = Create(
-		"Sound",
-		{
-			Name =
-				"WinSound",
-
-			SoundId =
-				WIN_SOUND_ID,
-
-			Volume = 0.85
-		},
-		SoundFolder
-	)
-
-	local LossSound = Create(
-		"Sound",
-		{
-			Name =
-				"LossSound",
-
-			SoundId =
-				LOSS_SOUND_ID,
-
-			Volume = 0.9
-		},
-		SoundFolder
-	)
-
-	local function PlaySound(sound)
-
-		pcall(function()
-
-			if not sound then
-				return
-			end
-
-			sound:Stop()
-
-			sound.TimePosition = 0
-
-			sound:Play()
-
-		end)
-	end
-
-	--========================================================
-	-- COLOR FAMILY COLORS
+	-- COLOR PANIC LOGIC
 	--========================================================
 
 	local FAMILY_COLORS = {
@@ -2831,11 +2718,9 @@ local function LaunchColorPanic()
 			)
 	}
 
-	--========================================================
-	-- COLOR CLASSIFIER
-	--========================================================
-
-	local function GetColorFamily(color)
+	local function GetColorFamily(
+		color
+	)
 
 		local h,s,v =
 			color:ToHSV()
@@ -2912,10 +2797,6 @@ local function LaunchColorPanic()
 		return "GRAY"
 	end
 
-	--========================================================
-	-- MAP SCAN
-	--========================================================
-
 	local function ScanColorFamilies()
 
 		local counts = {}
@@ -2927,13 +2808,16 @@ local function LaunchColorPanic()
 		local origin =
 			root
 			and root.Position
-			or Vector3.zero
+			or
+			Vector3.zero
 
 		for _,obj in ipairs(
 			workspace:GetDescendants()
 		) do
 
-			if obj:IsA("BasePart") then
+			if obj:IsA(
+				"BasePart"
+			) then
 
 				local distance = 0
 
@@ -2944,7 +2828,6 @@ local function LaunchColorPanic()
 							obj.Position -
 							origin
 						).Magnitude
-
 				end)
 
 				if distance <=
@@ -3003,31 +2886,24 @@ local function LaunchColorPanic()
 		table.sort(
 			candidates,
 			function(a,b)
-
 				return a.count >
 					b.count
-
 			end
 		)
 
 		return candidates
 	end
 
-	--========================================================
-	-- TARGET SELECTION
-	--========================================================
-
 	local function ChooseTargetFamilies(
-		candidateList,
+		candidates,
 		amount
 	)
 
 		local result = {}
-
 		local available = {}
 
 		for _,entry in ipairs(
-			candidateList
+			candidates
 		) do
 
 			table.insert(
@@ -3054,7 +2930,8 @@ local function LaunchColorPanic()
 			end
 
 			local pick =
-				math.random() *
+				math.random()
+				*
 				totalWeight
 
 			local chosenIndex = 1
@@ -3093,24 +2970,34 @@ local function LaunchColorPanic()
 		return result
 	end
 
-	--========================================================
-	-- DISPLAY HELPERS
-	--========================================================
+	local function ResetAFK()
+
+		afkAnchorPosition = nil
+
+		afkTimerStart = nil
+
+		AFKWarning.Text = ""
+
+	end
 
 	local function SetSingleDisplay(
 		family
 	)
 
 		SingleColor.BackgroundColor3 =
-			FAMILY_COLORS[family]
-			or THEME.Panel3
+			FAMILY_COLORS[
+				family
+			]
+			or
+			THEME.Panel3
 
 		SingleColorName.Text =
 			family
-			or "WAITING"
+			or
+			"WAITING"
 	end
 
-	local function ClearMultiDisplay()
+	local function ClearMulti()
 
 		for _,slot in ipairs(
 			DangerSlots
@@ -3127,11 +3014,11 @@ local function LaunchColorPanic()
 		end
 	end
 
-	local function SetMultiDisplay(
+	local function SetMulti(
 		families
 	)
 
-		ClearMultiDisplay()
+		ClearMulti()
 
 		for index,family in ipairs(
 			families
@@ -3149,11 +3036,6 @@ local function LaunchColorPanic()
 					FAMILY_COLORS[
 						family
 					]
-					or Color3.fromRGB(
-						255,
-						255,
-						255
-					)
 
 				slot.Label.Text =
 					family
@@ -3161,40 +3043,24 @@ local function LaunchColorPanic()
 		end
 	end
 
-	--========================================================
-	-- MODE
-	--========================================================
-
-	local function GetCurrentMode()
-
-		return MODES[
-			currentModeIndex
-		]
-	end
-
-	local function IsHardMode()
+	local function IsHard()
 
 		local mode =
-			GetCurrentMode()
+			MODES[
+				currentModeIndex
+			]
 
 		return mode == "Hard"
-			or mode ==
-			"Hard Endless"
+			or
+			mode == "Hard Endless"
 	end
 
-	local function IsTimedMode()
+	local function UpdateUI()
 
 		local mode =
-			GetCurrentMode()
-
-		return mode == "Timed"
-			or mode == "Hard"
-	end
-
-	local function UpdateModeUI()
-
-		local mode =
-			GetCurrentMode()
+			MODES[
+				currentModeIndex
+			]
 
 		ModeLabel.Text =
 			mode
@@ -3215,18 +3081,8 @@ local function LaunchColorPanic()
 			OptionLabel.Text =
 				"NO TIMER"
 
-		elseif mode == "Hard" then
-
-			OptionLabel.Text =
-				tostring(
-					HARD_OPTIONS[
-						optionIndex
-					]
-				)
-				..
-				" DANGER COLORS"
-
-		elseif mode == "Hard Endless" then
+		elseif mode == "Hard"
+			or mode == "Hard Endless" then
 
 			OptionLabel.Text =
 				tostring(
@@ -3238,229 +3094,6 @@ local function LaunchColorPanic()
 				" DANGER COLORS"
 		end
 	end
-
-	--========================================================
-	-- AFK RESET
-	--========================================================
-
-	local function ResetAFK()
-
-		afkAnchorPosition = nil
-
-		afkTimerStart = nil
-
-		afkWarningActive = false
-
-		AFKWarning.Text = ""
-	end
-
-	--========================================================
-	-- INVALIDATE ROUND
-	--========================================================
-
-	local function InvalidateRound()
-
-		roundToken += 1
-
-		running = false
-
-		selecting = false
-
-		roundEnd = nil
-
-		dangerFamilies = {}
-
-		ResetAFK()
-
-		TimerLabel.Text =
-			"READY"
-
-		TimerLabel.TextColor3 =
-			THEME.Text
-
-		TimerLabel.BackgroundColor3 =
-			THEME.Panel2
-
-		Status.Text =
-			"READY"
-
-		AFKWarning.Text =
-			""
-
-		SetSingleDisplay(
-			nil
-		)
-
-		ClearMultiDisplay()
-	end
-
-	--========================================================
-	-- SPIN REEL
-	--========================================================
-
-	local function SpinReel(
-		candidates,
-		token,
-		chosenFamilies
-	)
-
-		selecting = true
-
-		Status.Text =
-			IsHardMode()
-			and
-			"CHOOSING DANGER COLORS..."
-			or
-			"CHOOSING DANGER COLOR..."
-
-		AFKWarning.Text = ""
-
-		if IsHardMode() then
-
-			SingleColor.Visible =
-				false
-
-			SingleColorName.Visible =
-				false
-
-			MultiColor.Visible =
-				true
-
-			-- Put every final selected slot
-			-- on screen from the beginning.
-
-			for index,family in ipairs(
-				chosenFamilies
-			) do
-
-				local slot =
-					DangerSlots[index]
-
-				if slot then
-
-					slot.Frame.Visible =
-						true
-
-					slot.Dot.BackgroundColor3 =
-						FAMILY_COLORS[
-							family
-						]
-						or THEME.Panel3
-
-					slot.Label.Text =
-						"SELECTING..."
-				end
-			end
-
-		else
-
-			SingleColor.Visible =
-				true
-
-			SingleColorName.Visible =
-				true
-
-			MultiColor.Visible =
-				false
-		end
-
-		local start =
-			os.clock()
-
-		local spinDuration =
-			2.0
-
-		while
-			os.clock() - start
-			< spinDuration do
-
-			if token ~=
-				roundToken then
-
-				selecting = false
-
-				return nil
-			end
-
-			if IsHardMode() then
-
-				for index = 1,
-					#chosenFamilies do
-
-					local randomEntry =
-						candidates[
-							math.random(
-								1,
-								#candidates
-							)
-						]
-
-					local slot =
-						DangerSlots[index]
-
-					if slot then
-
-						slot.Dot.BackgroundColor3 =
-							randomEntry.color
-							or
-							FAMILY_COLORS[
-								randomEntry.family
-							]
-
-						slot.Label.Text =
-							randomEntry.family
-					end
-				end
-
-			else
-
-				local randomEntry =
-					candidates[
-						math.random(
-							1,
-							#candidates
-						)
-					]
-
-				SetSingleDisplay(
-					randomEntry.family
-				)
-			end
-
-			task.wait(
-				0.075
-			)
-		end
-
-		if token ~=
-			roundToken then
-
-			selecting = false
-
-			return nil
-		end
-
-		if IsHardMode() then
-
-			SetMultiDisplay(
-				chosenFamilies
-			)
-
-		else
-
-			SetSingleDisplay(
-				chosenFamilies[1]
-			)
-		end
-
-		selecting = false
-
-		return chosenFamilies
-	end
-
-	--========================================================
-	-- WIN
-	--========================================================
 
 	local function WinRound()
 
@@ -3470,9 +3103,9 @@ local function LaunchColorPanic()
 
 		running = false
 
-		roundEnd = nil
-
 		roundToken += 1
+
+		roundEnd = nil
 
 		ResetAFK()
 
@@ -3490,19 +3123,22 @@ local function LaunchColorPanic()
 
 		TimerLabel.BackgroundColor3 =
 			Color3.fromRGB(
-				14,
-				45,
-				36
+				12,
+				47,
+				34
 			)
 
-		PlaySound(
-			WinSound
-		)
-	end
+		pcall(function()
 
-	--========================================================
-	-- NORMAL LOSS
-	--========================================================
+			WinSound:Stop()
+
+			WinSound.TimePosition =
+				0
+
+			WinSound:Play()
+
+		end)
+	end
 
 	local function LoseRound()
 
@@ -3512,9 +3148,9 @@ local function LaunchColorPanic()
 
 		running = false
 
-		roundEnd = nil
-
 		roundToken += 1
+
+		roundEnd = nil
 
 		ResetAFK()
 
@@ -3540,37 +3176,37 @@ local function LaunchColorPanic()
 				33
 			)
 
-		PlaySound(
-			LossSound
-		)
+		pcall(function()
 
-		pcall(
-			function()
+			LossSound:Stop()
 
-				local character =
-					GetCharacter()
+			LossSound.TimePosition =
+				0
 
-				if not character then
-					return
-				end
+			LossSound:Play()
 
-				local humanoid =
-					character:
-					FindFirstChildOfClass(
-						"Humanoid"
-					)
+		end)
 
-				if humanoid then
-					humanoid.Health =
-						0
-				end
+		pcall(function()
+
+			local character =
+				GetCharacter()
+
+			if not character then
+				return
 			end
-		)
-	end
 
-	--========================================================
-	-- ADVANCED AFK LOSS
-	--========================================================
+			local humanoid =
+				character:
+				FindFirstChildOfClass(
+					"Humanoid"
+				)
+
+			if humanoid then
+				humanoid.Health = 0
+			end
+		end)
+	end
 
 	local function AFKLoss()
 
@@ -3580,12 +3216,9 @@ local function LaunchColorPanic()
 
 		running = false
 
-		roundEnd = nil
-
 		roundToken += 1
 
-		afkWarningActive =
-			false
+		roundEnd = nil
 
 		Status.Text =
 			"AUTO LOSS"
@@ -3609,37 +3242,191 @@ local function LaunchColorPanic()
 				33
 			)
 
-		PlaySound(
-			LossSound
-		)
+		pcall(function()
 
-		pcall(
-			function()
+			LossSound:Stop()
 
-				local character =
-					GetCharacter()
+			LossSound.TimePosition =
+				0
 
-				if not character then
-					return
-				end
+			LossSound:Play()
 
-				local humanoid =
-					character:
-					FindFirstChildOfClass(
-						"Humanoid"
-					)
+		end)
 
-				if humanoid then
-					humanoid.Health =
-						0
-				end
+		pcall(function()
+
+			local character =
+				GetCharacter()
+
+			if not character then
+				return
 			end
-		)
+
+			local humanoid =
+				character:
+				FindFirstChildOfClass(
+					"Humanoid"
+				)
+
+			if humanoid then
+				humanoid.Health = 0
+			end
+		end)
 	end
 
-	--========================================================
-	-- START ROUND
-	--========================================================
+	local function SpinReel(
+		candidates,
+		token,
+		chosen
+	)
+
+		selecting = true
+
+		Status.Text =
+			IsHard()
+			and
+			"CHOOSING DANGER COLORS..."
+			or
+			"CHOOSING DANGER COLOR..."
+
+		if IsHard() then
+
+			SingleColor.Visible =
+				false
+
+			SingleColorName.Visible =
+				false
+
+			MultiColor.Visible =
+				true
+
+			for index,family in ipairs(
+				chosen
+			) do
+
+				local slot =
+					DangerSlots[index]
+
+				if slot then
+
+					slot.Frame.Visible =
+						true
+
+					slot.Dot.BackgroundColor3 =
+						FAMILY_COLORS[
+							family
+						]
+
+					slot.Label.Text =
+						"SELECTING..."
+				end
+			end
+
+		else
+
+			SingleColor.Visible =
+				true
+
+			SingleColorName.Visible =
+				true
+
+			MultiColor.Visible =
+				false
+		end
+
+		local start =
+			os.clock()
+
+		local duration = 2
+
+		while
+			os.clock() - start
+			<
+			duration do
+
+			if token ~=
+				roundToken then
+
+				selecting = false
+
+				return nil
+			end
+
+			if IsHard() then
+
+				for index = 1,
+					#chosen do
+
+					local candidate =
+						candidates[
+							math.random(
+								1,
+								#candidates
+							)
+						]
+
+					local slot =
+						DangerSlots[index]
+
+					if slot then
+
+						slot.Dot.BackgroundColor3 =
+							candidate.color
+							or
+							FAMILY_COLORS[
+								candidate.family
+							]
+
+						slot.Label.Text =
+							candidate.family
+					end
+				end
+
+			else
+
+				local candidate =
+					candidates[
+						math.random(
+							1,
+							#candidates
+						)
+					]
+
+				SetSingleDisplay(
+					candidate.family
+				)
+			end
+
+			task.wait(
+				0.075
+			)
+		end
+
+		if token ~=
+			roundToken then
+
+			selecting = false
+
+			return nil
+		end
+
+		if IsHard() then
+
+			SetMulti(
+				chosen
+			)
+
+		else
+
+			SetSingleDisplay(
+				chosen[1]
+			)
+		end
+
+		selecting = false
+
+		return chosen
+	end
 
 	local function StartRound()
 
@@ -3651,13 +3438,11 @@ local function LaunchColorPanic()
 
 		roundToken += 1
 
-		local thisToken =
+		local token =
 			roundToken
 
 		running = false
-
 		selecting = false
-
 		roundEnd = nil
 
 		dangerFamilies = {}
@@ -3670,29 +3455,27 @@ local function LaunchColorPanic()
 		TimerLabel.Text =
 			"SCANNING"
 
-		AFKWarning.Text =
-			""
-
 		local mode =
-			GetCurrentMode()
+			MODES[
+				currentModeIndex
+			]
 
-		if mode == "Timed"
-			or mode == "Endless" then
-
-			dangerCount = 1
-
-		else
+		if IsHard() then
 
 			dangerCount =
 				HARD_OPTIONS[
 					optionIndex
 				]
+
+		else
+
+			dangerCount = 1
 		end
 
 		local candidates =
 			ScanColorFamilies()
 
-		if thisToken ~=
+		if token ~=
 			roundToken then
 
 			return
@@ -3709,54 +3492,27 @@ local function LaunchColorPanic()
 			return
 		end
 
-		--====================================================
-		-- CHOOSE ALL TARGETS FIRST
-		--====================================================
-
-		local chosenFamilies =
+		local chosen =
 			ChooseTargetFamilies(
 				candidates,
 				dangerCount
 			)
 
-		if #chosenFamilies == 0 then
-
-			Status.Text =
-				"NO TARGET COLORS FOUND"
-
-			TimerLabel.Text =
-				"ERROR"
-
-			return
-		end
-
 		local selected =
 			SpinReel(
 				candidates,
-				thisToken,
-				chosenFamilies
+				token,
+				chosen
 			)
 
-		if thisToken ~=
+		if token ~=
 			roundToken then
-
 			return
 		end
 
 		if not selected then
-
-			Status.Text =
-				"ROUND CANCELLED"
-
-			TimerLabel.Text =
-				"READY"
-
 			return
 		end
-
-		--====================================================
-		-- SAVE DANGER FAMILIES
-		--====================================================
 
 		dangerFamilies = {}
 
@@ -3764,18 +3520,15 @@ local function LaunchColorPanic()
 			selected
 		) do
 
-			dangerFamilies[family] =
-				true
+			dangerFamilies[
+				family
+			] = true
 		end
-
-		--====================================================
-		-- ROUND LIVE
-		--====================================================
 
 		running = true
 
 		Status.Text =
-			IsHardMode()
+			IsHard()
 			and
 			"AVOID EVERY COLOR ABOVE!"
 			or
@@ -3793,7 +3546,9 @@ local function LaunchColorPanic()
 		elseif mode == "Hard" then
 
 			roundEnd =
-				os.clock() + 60
+				os.clock()
+				+
+				60
 
 		else
 
@@ -3803,17 +3558,10 @@ local function LaunchColorPanic()
 				"ENDLESS"
 		end
 
-		--====================================================
-		-- AFK ANCHOR
-		--====================================================
-
 		local root =
 			GetRoot()
 
 		if root then
-
-			-- Only horizontal coordinates matter.
-			-- Vertical movement/jumping cannot fool the detector.
 
 			afkAnchorPosition =
 				Vector3.new(
@@ -3824,181 +3572,530 @@ local function LaunchColorPanic()
 
 			afkTimerStart =
 				os.clock()
-
-		else
-
-			ResetAFK()
 		end
 	end
 
 	--========================================================
-	-- CHANGE MODE
+	-- DANGER + AFK LOOP
 	--========================================================
 
-	local function ChangeMode(direction)
+	RunService.Heartbeat:Connect(
+		function()
 
-		if running
-			or selecting then
+			if not running then
+				return
+			end
 
-			InvalidateRound()
-		end
+			-- Danger
 
-		currentModeIndex +=
-			direction
+			local now =
+				os.clock()
 
-		if currentModeIndex >
-			#MODES then
+			if now -
+				lastDangerCheck
+				>=
+				TOUCH_INTERVAL then
 
-			currentModeIndex =
-				1
-		end
+				lastDangerCheck =
+					now
 
-		if currentModeIndex <
-			1 then
+				if dangerFamilies
+					and
+					next(dangerFamilies)
+					and
+					StandingOnDangerFamily then
 
-			currentModeIndex =
-				#MODES
-		end
+					-- Placeholder branch intentionally
+					-- replaced below by direct check.
+				end
 
-		local mode =
-			GetCurrentMode()
+				local character =
+					GetCharacter()
 
-		if mode == "Timed"
-			or mode == "Endless" then
+				if character then
 
-			optionIndex =
-				math.clamp(
-					optionIndex,
-					1,
-					#TIMED_OPTIONS
+					local root =
+						character:
+						FindFirstChild(
+							"HumanoidRootPart"
+						)
+
+					if root then
+
+						local params =
+							OverlapParams.new()
+
+						params.FilterType =
+							Enum.RaycastFilterType.Exclude
+
+						params.FilterDescendantsInstances =
+							{
+								character
+							}
+
+						local parts =
+							workspace:
+							GetPartBoundsInBox(
+
+								CFrame.new(
+									root.Position.X,
+									root.Position.Y - 3,
+									root.Position.Z
+								),
+
+								Vector3.new(
+									3.5,
+									1.2,
+									3.5
+								),
+
+								params
+							)
+
+						for _,part in ipairs(
+							parts
+						) do
+
+							if part:IsA(
+								"BasePart"
+							) then
+
+								local family =
+									GetColorFamily(
+										part.Color
+									)
+
+								if dangerFamilies[
+									family
+								] then
+
+									LoseRound()
+
+									return
+								end
+							end
+						end
+					end
+				end
+			end
+
+			--================================================
+			-- ADVANCED CAMP DETECTION
+			--================================================
+
+			local root =
+				GetRoot()
+
+			if not root then
+
+				afkAnchorPosition =
+					nil
+
+				afkTimerStart =
+					nil
+
+				AFKWarning.Text =
+					""
+
+				return
+			end
+
+			local current =
+				Vector3.new(
+					root.Position.X,
+					0,
+					root.Position.Z
 				)
 
-		else
+			if not afkAnchorPosition then
 
-			optionIndex =
-				math.clamp(
-					optionIndex,
-					1,
-					#HARD_OPTIONS
+				afkAnchorPosition =
+					current
+
+				afkTimerStart =
+					os.clock()
+
+				return
+			end
+
+			local distance =
+				(
+					current -
+					afkAnchorPosition
+				).Magnitude
+
+			-- The player must leave the entire
+			-- camping radius to reset the timer.
+
+			if distance >=
+				AFK_CAMP_RADIUS then
+
+				afkAnchorPosition =
+					current
+
+				afkTimerStart =
+					os.clock()
+
+				AFKWarning.Text =
+					""
+
+				return
+			end
+
+			local elapsed =
+				os.clock()
+				-
+				afkTimerStart
+
+			local remaining =
+				AFK_LIMIT -
+				elapsed
+
+			if elapsed >= 2
+				and
+				remaining > 0 then
+
+				AFKWarning.Text =
+					"⚠ LEAVE THE AREA • AUTO-LOSS IN "
+					..
+					string.format(
+						"%.1f",
+						remaining
+					)
+					..
+					" SECONDS"
+
+				AFKWarning.TextColor3 =
+					THEME.Yellow
+
+				AFKWarning.TextTransparency =
+					(
+						math.sin(
+							os.clock() * 8
+						)
+						+ 1
+					)
+					*
+					0.07
+
+			else
+
+				AFKWarning.Text =
+					""
+
+				AFKWarning.TextTransparency =
+					0
+			end
+
+			if remaining <= 0 then
+
+				AFKLoss()
+			end
+		end
+	)
+
+	--========================================================
+	-- TIMER
+	--========================================================
+
+	RunService.RenderStepped:Connect(
+		function()
+
+			if not running then
+				return
+			end
+
+			if not
+				(
+					MODES[
+						currentModeIndex
+					]
+					==
+					"Timed"
+					or
+					MODES[
+						currentModeIndex
+					]
+					==
+					"Hard"
+				) then
+
+				return
+			end
+
+			if not roundEnd then
+				return
+			end
+
+			local remaining =
+				roundEnd -
+				os.clock()
+
+			if remaining <= 0 then
+
+				WinRound()
+
+				return
+			end
+
+			local seconds =
+				math.ceil(
+					remaining
 				)
+
+			TimerLabel.Text =
+				string.format(
+					"%02d",
+					seconds
+				)
+
+			if remaining <= 10 then
+
+				TimerLabel.TextColor3 =
+					THEME.Red
+
+			elseif remaining <= 20 then
+
+				TimerLabel.TextColor3 =
+					THEME.Orange
+
+			else
+
+				TimerLabel.TextColor3 =
+					THEME.Cyan
+			end
 		end
-
-		UpdateModeUI()
-
-		Status.Text =
-			"READY"
-
-		TimerLabel.Text =
-			"READY"
-
-		AFKWarning.Text =
-			""
-
-		SingleColor.Visible =
-			not IsHardMode()
-
-		SingleColorName.Visible =
-			not IsHardMode()
-
-		MultiColor.Visible =
-			IsHardMode()
-
-		ClearMultiDisplay()
-	end
+	)
 
 	--========================================================
-	-- CHANGE OPTION
-	--========================================================
-
-	local function ChangeOption(direction)
-
-		local mode =
-			GetCurrentMode()
-
-		if mode == "Endless"
-			or mode ==
-			"Hard Endless" then
-
-			return
-		end
-
-		if running
-			or selecting then
-
-			InvalidateRound()
-		end
-
-		optionIndex +=
-			direction
-
-		if mode == "Timed" then
-
-			if optionIndex >
-				#TIMED_OPTIONS then
-
-				optionIndex = 1
-			end
-
-			if optionIndex <
-				1 then
-
-				optionIndex =
-					#TIMED_OPTIONS
-			end
-
-		elseif mode == "Hard" then
-
-			if optionIndex >
-				#HARD_OPTIONS then
-
-				optionIndex = 1
-			end
-
-			if optionIndex <
-				1 then
-
-				optionIndex =
-					#HARD_OPTIONS
-			end
-		end
-
-		UpdateModeUI()
-
-		Status.Text =
-			"READY"
-
-		TimerLabel.Text =
-			"READY"
-
-		AFKWarning.Text =
-			""
-	end
-
-	--========================================================
-	-- BUTTONS
+	-- MODE BUTTONS
 	--========================================================
 
 	ModeLeft.MouseButton1Click:Connect(
 		function()
-			ChangeMode(-1)
+
+			if running
+				or selecting then
+
+				roundToken += 1
+
+				running = false
+				selecting = false
+				roundEnd = nil
+
+				ResetAFK()
+			end
+
+			currentModeIndex -=
+				1
+
+			if currentModeIndex <
+				1 then
+
+				currentModeIndex =
+					#MODES
+			end
+
+			if IsHard() then
+
+				optionIndex =
+					math.clamp(
+						optionIndex,
+						1,
+						#HARD_OPTIONS
+					)
+
+			else
+
+				optionIndex =
+					math.clamp(
+						optionIndex,
+						1,
+						#TIMED_OPTIONS
+					)
+			end
+
+			UpdateUI()
+
+			Status.Text =
+				"READY"
+
+			TimerLabel.Text =
+				"READY"
 		end
 	)
 
 	ModeRight.MouseButton1Click:Connect(
 		function()
-			ChangeMode(1)
+
+			if running
+				or selecting then
+
+				roundToken += 1
+
+				running = false
+				selecting = false
+				roundEnd = nil
+
+				ResetAFK()
+			end
+
+			currentModeIndex +=
+				1
+
+			if currentModeIndex >
+				#MODES then
+
+				currentModeIndex =
+					1
+			end
+
+			if IsHard() then
+
+				optionIndex =
+					math.clamp(
+						optionIndex,
+						1,
+						#HARD_OPTIONS
+					)
+
+			else
+
+				optionIndex =
+					math.clamp(
+						optionIndex,
+						1,
+						#TIMED_OPTIONS
+					)
+			end
+
+			UpdateUI()
+
+			Status.Text =
+				"READY"
+
+			TimerLabel.Text =
+				"READY"
 		end
 	)
 
 	OptionLeft.MouseButton1Click:Connect(
 		function()
-			ChangeOption(-1)
+
+			local mode =
+				MODES[
+					currentModeIndex
+				]
+
+			if mode ==
+				"Endless"
+				or
+				mode ==
+				"Hard Endless" then
+
+				return
+			end
+
+			if running
+				or selecting then
+
+				roundToken += 1
+
+				running = false
+				selecting = false
+				roundEnd = nil
+
+				ResetAFK()
+			end
+
+			optionIndex -=
+				1
+
+			if mode == "Timed" then
+
+				if optionIndex <
+					1 then
+
+					optionIndex =
+						#TIMED_OPTIONS
+				end
+
+			else
+
+				if optionIndex <
+					1 then
+
+					optionIndex =
+						#HARD_OPTIONS
+				end
+			end
+
+			UpdateUI()
+
+			Status.Text =
+				"READY"
+
+			TimerLabel.Text =
+				"READY"
 		end
 	)
 
 	OptionRight.MouseButton1Click:Connect(
 		function()
-			ChangeOption(1)
+
+			local mode =
+				MODES[
+					currentModeIndex
+				]
+
+			if mode ==
+				"Endless"
+				or
+				mode ==
+				"Hard Endless" then
+
+				return
+			end
+
+			if running
+				or selecting then
+
+				roundToken += 1
+
+				running = false
+				selecting = false
+				roundEnd = nil
+
+				ResetAFK()
+			end
+
+			optionIndex +=
+				1
+
+			if mode == "Timed" then
+
+				if optionIndex >
+					#TIMED_OPTIONS then
+
+					optionIndex = 1
+				end
+
+			else
+
+				if optionIndex >
+					#HARD_OPTIONS then
+
+					optionIndex = 1
+				end
+			end
+
+			UpdateUI()
+
+			Status.Text =
+				"READY"
+
+			TimerLabel.Text =
+				"READY"
 		end
 	)
 
@@ -4007,10 +4104,19 @@ local function LaunchColorPanic()
 
 			if running then
 
-				InvalidateRound()
+				running = false
+
+				roundToken += 1
+
+				roundEnd = nil
+
+				ResetAFK()
 
 				Status.Text =
 					"ROUND STOPPED"
+
+				TimerLabel.Text =
+					"READY"
 
 				return
 			end
@@ -4036,16 +4142,12 @@ local function LaunchColorPanic()
 		roundToken += 1
 
 		running = false
-
 		selecting = false
-
 		roundEnd = nil
 
-		pcall(
-			function()
-				SoundFolder:Destroy()
-			end
-		)
+		pcall(function()
+			SoundFolder:Destroy()
+		end)
 
 		Tween(
 			GameGui,
@@ -4057,7 +4159,8 @@ local function LaunchColorPanic()
 						500
 					),
 
-				BackgroundTransparency = 1
+				BackgroundTransparency =
+					1
 			}
 		)
 
@@ -4101,13 +4204,11 @@ local function LaunchColorPanic()
 	)
 
 	--========================================================
-	-- GAME DRAG
+	-- DRAG
 	--========================================================
 
 	local dragging = false
-
 	local dragStart
-
 	local startPosition
 
 	Title.InputBegan:Connect(
@@ -4115,7 +4216,8 @@ local function LaunchColorPanic()
 
 			if input.UserInputType ==
 				Enum.UserInputType.MouseButton1
-				or input.UserInputType ==
+				or
+				input.UserInputType ==
 				Enum.UserInputType.Touch then
 
 				dragging = true
@@ -4149,7 +4251,8 @@ local function LaunchColorPanic()
 
 			if input.UserInputType ==
 				Enum.UserInputType.MouseMovement
-				or input.UserInputType ==
+				or
+				input.UserInputType ==
 				Enum.UserInputType.Touch then
 
 				local delta =
@@ -4162,433 +4265,24 @@ local function LaunchColorPanic()
 						startPosition.X.Scale,
 
 						startPosition.X.Offset
-							+ delta.X,
+							+
+							delta.X,
 
 						startPosition.Y.Scale,
 
 						startPosition.Y.Offset
-							+ delta.Y
+							+
+							delta.Y
 					)
 			end
 		end
 	)
 
 	--========================================================
-	-- TIMER
+	-- INITIALIZE
 	--========================================================
 
-	RunService.RenderStepped:Connect(
-		function()
-
-			if not running then
-				return
-			end
-
-			if not IsTimedMode() then
-				return
-			end
-
-			if roundEnd == nil then
-				return
-			end
-
-			local remaining =
-				roundEnd -
-				os.clock()
-
-			if remaining <= 0 then
-
-				WinRound()
-
-				return
-			end
-
-			local seconds =
-				math.max(
-					0,
-					math.ceil(
-						remaining
-					)
-				)
-
-			TimerLabel.Text =
-				string.format(
-					"%02d",
-					seconds
-				)
-
-			if remaining <= 10 then
-
-				TimerLabel.TextColor3 =
-					THEME.Red
-
-				TimerLabel.BackgroundColor3 =
-					Color3.fromRGB(
-						50,
-						18,
-						30
-					)
-
-			elseif remaining <= 20 then
-
-				TimerLabel.TextColor3 =
-					THEME.Yellow
-
-				TimerLabel.BackgroundColor3 =
-					Color3.fromRGB(
-						45,
-						38,
-						18
-					)
-
-			else
-
-				TimerLabel.TextColor3 =
-					THEME.Cyan
-
-				TimerLabel.BackgroundColor3 =
-					THEME.Panel2
-			end
-		end
-	)
-
-	--========================================================
-	-- DANGER DETECTOR
-	--========================================================
-
-	local function StandingOnDangerFamily()
-
-		local character =
-			GetCharacter()
-
-		if not character then
-			return false
-		end
-
-		local root =
-			character:FindFirstChild(
-				"HumanoidRootPart"
-			)
-
-		if not root then
-			return false
-		end
-
-		local overlapParams =
-			OverlapParams.new()
-
-		overlapParams.FilterType =
-			Enum.RaycastFilterType.Exclude
-
-		overlapParams.FilterDescendantsInstances =
-			{
-				character
-			}
-
-		local parts =
-			workspace:GetPartBoundsInBox(
-
-				CFrame.new(
-					root.Position.X,
-					root.Position.Y - 3,
-					root.Position.Z
-				),
-
-				Vector3.new(
-					3.5,
-					1.2,
-					3.5
-				),
-
-				overlapParams
-			)
-
-		for _,part in ipairs(
-			parts
-		) do
-
-			if part:IsA("BasePart") then
-
-				local family =
-					GetColorFamily(
-						part.Color
-					)
-
-				if dangerFamilies[
-					family
-				] then
-
-					return true
-				end
-			end
-		end
-
-		return false
-	end
-
-	--========================================================
-	-- ADVANCED AFK DETECTOR
-	--========================================================
-
-	local function UpdateAFK()
-
-		if not running then
-			return
-		end
-
-		local root =
-			GetRoot()
-
-		if not root then
-
-			-- Do not count missing characters
-			-- as AFK and do not throw errors.
-
-			afkAnchorPosition =
-				nil
-
-			afkTimerStart =
-				nil
-
-			AFKWarning.Text =
-				""
-
-			return
-		end
-
-		local currentPosition =
-			Vector3.new(
-				root.Position.X,
-				0,
-				root.Position.Z
-			)
-
-		--====================================================
-		-- CREATE ANCHOR
-		--====================================================
-
-		if not afkAnchorPosition then
-
-			afkAnchorPosition =
-				currentPosition
-
-			afkTimerStart =
-				os.clock()
-
-			return
-		end
-
-		--====================================================
-		-- DISTANCE FROM ORIGINAL CAMP ZONE
-		--====================================================
-
-		local distanceFromAnchor =
-			(
-				currentPosition -
-				afkAnchorPosition
-			).Magnitude
-
-		--====================================================
-		-- IMPORTANT:
-		--
-		-- We DO NOT reset the timer simply because the
-		-- player moved 1 stud, 2 studs, 3 studs, etc.
-		--
-		-- They must leave the entire camp radius.
-		--====================================================
-
-		if distanceFromAnchor >=
-			AFK_CAMP_RADIUS then
-
-			-- Meaningful movement has happened.
-			-- Create a NEW camp zone.
-
-			afkAnchorPosition =
-				currentPosition
-
-			afkTimerStart =
-				os.clock()
-
-			afkWarningActive =
-				false
-
-			AFKWarning.Text =
-				""
-
-			return
-		end
-
-		--====================================================
-		-- PLAYER IS STILL INSIDE CAMP ZONE
-		--====================================================
-
-		local elapsed =
-			os.clock() -
-			afkTimerStart
-
-		local remaining =
-			AFK_LIMIT -
-			elapsed
-
-		--====================================================
-		-- WARNING
-		--====================================================
-
-		if elapsed >=
-			AFK_WARNING_START
-			and remaining > 0 then
-
-			afkWarningActive =
-				true
-
-			AFKWarning.Text =
-				"⚠ LEAVE THE AREA! AUTO-LOSS IN "
-				..
-				string.format(
-					"%.1f",
-					remaining
-				)
-				..
-				" SECONDS"
-
-			AFKWarning.TextColor3 =
-				THEME.Yellow
-
-			-- Small visual pulse
-			-- on the warning text.
-
-			local pulse =
-				(
-					math.sin(
-						os.clock() * 8
-					)
-					+ 1
-				)
-				/ 2
-
-			AFKWarning.TextTransparency =
-				pulse * 0.15
-
-		else
-
-			afkWarningActive =
-				false
-
-			AFKWarning.Text =
-				""
-
-			AFKWarning.TextTransparency =
-				0
-		end
-
-		--====================================================
-		-- AUTO LOSS
-		--====================================================
-
-		if remaining <= 0 then
-
-			AFKLoss()
-		end
-	end
-
-	--========================================================
-	-- MAIN ROUND LOOP
-	--========================================================
-
-	RunService.Heartbeat:Connect(
-		function()
-
-			if not running then
-				return
-			end
-
-			local now =
-				os.clock()
-
-			-- Danger check
-
-			if now -
-				lastDangerCheck
-				>= TOUCH_INTERVAL then
-
-				lastDangerCheck =
-					now
-
-				if StandingOnDangerFamily() then
-
-					LoseRound()
-
-					return
-				end
-			end
-
-			-- Anti-AFK
-
-			UpdateAFK()
-		end
-	)
-
-	--========================================================
-	-- SAFE RESPAWN
-	--========================================================
-
-	local playerForRespawn =
-		GetLocalPlayer()
-
-	if playerForRespawn then
-
-		playerForRespawn.CharacterAdded:
-			Connect(
-				function(character)
-
-					task.wait(
-						0.35
-					)
-
-					if not running then
-						return
-					end
-
-					local root =
-						character:
-						FindFirstChild(
-							"HumanoidRootPart"
-						)
-
-					if root then
-
-						-- Fresh character gets a
-						-- fresh AFK anchor.
-
-						afkAnchorPosition =
-							Vector3.new(
-								root.Position.X,
-								0,
-								root.Position.Z
-							)
-
-						afkTimerStart =
-							os.clock()
-
-						AFKWarning.Text =
-							""
-
-					else
-
-						ResetAFK()
-					end
-
-					Status.Text =
-						"ROUND ACTIVE"
-				end
-			)
-	end
-
-	--========================================================
-	-- INITIAL UI
-	--========================================================
-
-	UpdateModeUI()
+	UpdateUI()
 
 	SingleColor.Visible =
 		true
@@ -4598,9 +4292,6 @@ local function LaunchColorPanic()
 
 	MultiColor.Visible =
 		false
-
-	AFKWarning.Text =
-		""
 
 	GameGui.Size =
 		UDim2.fromOffset(
@@ -4630,7 +4321,8 @@ local function LaunchColorPanic()
 
 			while
 				GameGui
-				and GameGui.Parent do
+				and
+				GameGui.Parent do
 
 				local t =
 					os.clock()
@@ -4642,14 +4334,17 @@ local function LaunchColorPanic()
 						)
 						+ 1
 					)
-					/ 2
+					/
+					2
 
 				pcall(
 					function()
 
-						GameGlow.BackgroundTransparency =
-							0.96 -
-							pulse * 0.025
+						effectGlow.BackgroundTransparency =
+							0.97 -
+							pulse *
+							0.025
+
 					end
 				)
 
@@ -4662,37 +4357,2663 @@ local function LaunchColorPanic()
 end
 
 --============================================================
--- GAME CARD CREATION
+-- LOWER YOUR TONE
+--============================================================
+
+local function LaunchLowerYourTone()
+
+	Hub.Visible =
+		false
+
+	--========================================================
+	-- SETTINGS
+	--========================================================
+
+	local SOUND_LEVELS = {
+		10,
+		20,
+		35,
+		50,
+		65,
+		80,
+		95
+	}
+
+	local LEVEL_NAMES = {
+		"QUIET",
+		"LOW",
+		"NORMAL",
+		"LOUD",
+		"VERY LOUD",
+		"DANGER",
+		"CLIP"
+	}
+
+	local SENSITIVITIES = {
+		{
+			Name = "RELAXED",
+			Multiplier = 0.72
+		},
+
+		{
+			Name = "NORMAL",
+			Multiplier = 1.00
+		},
+
+		{
+			Name = "STRICT",
+			Multiplier = 1.35
+		},
+
+		{
+			Name = "WHISPER",
+			Multiplier = 1.80
+		}
+	}
+
+	local CHALLENGES = {
+		"KEEP IT DOWN",
+		"STAY GREEN",
+		"NO RED",
+		"NO SPIKES"
+	}
+
+	local TIMED_OPTIONS = {
+		30,
+		60,
+		120,
+		180,
+		300
+	}
+
+	local MODES = {
+		"Timed",
+		"Endless"
+	}
+
+	local WIN_SOUND_ID =
+		"rbxassetid://9075431521"
+
+	local LOSS_SOUND_ID =
+		"rbxassetid://8090403894"
+
+	--========================================================
+	-- STATE
+	--========================================================
+
+	local modeIndex = 1
+	local sensitivityIndex = 2
+	local challengeIndex = 1
+	local timeIndex = 2
+
+	local running = false
+
+	local roundEnd = nil
+
+	local microphoneReady = false
+
+	local currentLevel = 0
+
+	local smoothLevel = 0
+
+	local peakMemory = 0
+
+	local spikeCount = 0
+
+	local spikeCooldown = 0
+
+	local audioInput = nil
+	local analyzer = nil
+	local wire = nil
+
+	--========================================================
+	-- GAME GUI
+	--========================================================
+
+	local GameGui =
+		Create(
+			"Frame",
+			{
+				Name =
+					"LowerYourTone",
+
+				Size =
+					UDim2.fromOffset(
+						620,
+						620
+					),
+
+				Position =
+					UDim2.new(
+						0.5,
+						-310,
+						0.5,
+						-310
+					),
+
+				BackgroundColor3 =
+					Color3.fromRGB(
+						8,
+						11,
+						20
+					),
+
+				BorderSizePixel = 0,
+
+				ClipsDescendants =
+					true,
+
+				ZIndex = 50
+			},
+			ScreenGui
+		)
+
+	Corner(
+		GameGui,
+		28
+	)
+
+	Stroke(
+		GameGui,
+		Color3.fromRGB(
+			73,
+			81,
+			112
+		),
+		1.5,
+		0.2
+	)
+
+	--========================================================
+	-- INTERNAL BACKGROUND
+	--========================================================
+
+	local Internal =
+		Create(
+			"Frame",
+			{
+				Size =
+					UDim2.fromScale(
+						1,
+						1
+					),
+
+				BackgroundTransparency = 1,
+
+				ClipsDescendants =
+					true,
+
+				ZIndex = 51
+			},
+			GameGui
+		)
+
+	Create(
+		"UIGradient",
+		{
+			Color =
+				ColorSequence.new(
+					{
+						ColorSequenceKeypoint.new(
+							0,
+							Color3.fromRGB(
+								8,
+								29,
+								35
+							)
+						),
+
+						ColorSequenceKeypoint.new(
+							0.45,
+							Color3.fromRGB(
+								8,
+								15,
+								25
+							)
+						),
+
+						ColorSequenceKeypoint.new(
+							1,
+							Color3.fromRGB(
+								24,
+								12,
+								31
+							)
+						)
+					}
+				),
+
+			Rotation = 20
+		},
+		Internal
+	)
+
+	local GlowA =
+		Create(
+			"Frame",
+			{
+				Size =
+					UDim2.fromOffset(
+						400,
+						400
+					),
+
+				Position =
+					UDim2.new(
+						0.02,
+						-200,
+						0.05,
+						-200
+					),
+
+				BackgroundColor3 =
+					THEME.Cyan,
+
+				BackgroundTransparency =
+					0.965,
+
+				BorderSizePixel = 0,
+
+				ZIndex = 51
+			},
+			Internal
+		)
+
+	Corner(
+		GlowA,
+		200
+	)
+
+	local GlowB =
+		Create(
+			"Frame",
+			{
+				Size =
+					UDim2.fromOffset(
+						400,
+						400
+					),
+
+				Position =
+					UDim2.new(
+						0.98,
+						-200,
+						0.92,
+						-200
+					),
+
+				BackgroundColor3 =
+					THEME.Purple,
+
+				BackgroundTransparency =
+					0.97,
+
+				BorderSizePixel = 0,
+
+				ZIndex = 51
+			},
+			Internal
+		)
+
+	Corner(
+		GlowB,
+		200
+	)
+
+	--========================================================
+	-- HEADER
+	--========================================================
+
+	local GameAccent =
+		Create(
+			"Frame",
+			{
+				Size =
+					UDim2.new(
+						1,
+						0,
+						0,
+						4
+					),
+
+				BackgroundColor3 =
+					THEME.Cyan,
+
+				BorderSizePixel = 0,
+
+				ZIndex = 70
+			},
+			GameGui
+		)
+
+	Corner(
+		GameAccent,
+		28
+	)
+
+	local Title =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.new(
+						1,
+						-150,
+						0,
+						36
+					),
+
+				Position =
+					UDim2.fromOffset(
+						26,
+						20
+					),
+
+				BackgroundTransparency = 1,
+
+				Text =
+					"LOWER YOUR TONE",
+
+				TextColor3 =
+					THEME.Text,
+
+				TextSize = 25,
+
+				Font =
+					Enum.Font.GothamBlack,
+
+				TextXAlignment =
+					Enum.TextXAlignment.Left,
+
+				ZIndex = 71
+			},
+			GameGui
+		)
+
+	local Subtitle =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.new(
+						1,
+						-150,
+						0,
+						20
+					),
+
+				Position =
+					UDim2.fromOffset(
+						27,
+						50
+					),
+
+				BackgroundTransparency = 1,
+
+				Text =
+					"YOUR VOICE IS THE CONTROLLER",
+
+				TextColor3 =
+					THEME.Cyan,
+
+				TextSize = 9,
+
+				Font =
+					Enum.Font.GothamBold,
+
+				TextXAlignment =
+					Enum.TextXAlignment.Left,
+
+				ZIndex = 71
+			},
+			GameGui
+		)
+
+	local BackButton =
+		Create(
+			"TextButton",
+			{
+				Size =
+					UDim2.fromOffset(
+						36,
+						36
+					),
+
+				Position =
+					UDim2.new(
+						1,
+						-94,
+						0,
+						20
+					),
+
+				BackgroundColor3 =
+					THEME.Panel3,
+
+				Text =
+					"‹",
+
+				TextColor3 =
+					THEME.Text,
+
+				TextSize = 25,
+
+				Font =
+					Enum.Font.GothamBold,
+
+				AutoButtonColor = false,
+
+				ZIndex = 72
+			},
+			GameGui
+		)
+
+	Corner(
+		BackButton,
+		11
+	)
+
+	local CloseButton =
+		Create(
+			"TextButton",
+			{
+				Size =
+					UDim2.fromOffset(
+						36,
+						36
+					),
+
+				Position =
+					UDim2.new(
+						1,
+						-48,
+						0,
+						20
+					),
+
+				BackgroundColor3 =
+					THEME.Panel3,
+
+				Text =
+					"×",
+
+				TextColor3 =
+					THEME.Text,
+
+				TextSize = 24,
+
+				Font =
+					Enum.Font.GothamBold,
+
+				AutoButtonColor = false,
+
+				ZIndex = 72
+			},
+			GameGui
+		)
+
+	Corner(
+		CloseButton,
+		11
+	)
+
+	--========================================================
+	-- MICROPHONE STATUS
+	--========================================================
+
+	local MicStatus =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.new(
+						1,
+						-52,
+						0,
+						24
+					),
+
+				Position =
+					UDim2.fromOffset(
+						26,
+						82
+					),
+
+				BackgroundTransparency = 1,
+
+				Text =
+					"● MICROPHONE: SEARCHING",
+
+				TextColor3 =
+					THEME.Yellow,
+
+				TextSize = 9,
+
+				Font =
+					Enum.Font.GothamBlack,
+
+				TextXAlignment =
+					Enum.TextXAlignment.Left,
+
+				ZIndex = 72
+			},
+			GameGui
+		)
+
+	--========================================================
+	-- MAIN CIRCULAR DISPLAY
+	--========================================================
+
+	local MeterOuter =
+		Create(
+			"Frame",
+			{
+				Size =
+					UDim2.fromOffset(
+						225,
+						225
+					),
+
+				Position =
+					UDim2.new(
+						0.5,
+						-112,
+						0,
+						105
+					),
+
+				BackgroundColor3 =
+					Color3.fromRGB(
+						11,
+						16,
+						26
+					),
+
+				BorderSizePixel = 0,
+
+				ZIndex = 71
+			},
+			GameGui
+		)
+
+	Corner(
+		MeterOuter,
+		112
+	)
+
+	local MeterStroke =
+		Stroke(
+			MeterOuter,
+			THEME.Cyan,
+			3,
+			0.15
+		)
+
+	local MeterInner =
+		Create(
+			"Frame",
+			{
+				Size =
+					UDim2.fromOffset(
+						195,
+						195
+					),
+
+				Position =
+					UDim2.fromOffset(
+						15,
+						15
+					),
+
+				BackgroundColor3 =
+					Color3.fromRGB(
+						7,
+						11,
+						19
+					),
+
+				BorderSizePixel = 0,
+
+				ZIndex = 72
+			},
+			MeterOuter
+		)
+
+	Corner(
+		MeterInner,
+		98
+	)
+
+	local LevelNumber =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.new(
+						1,
+						0,
+						0,
+						58
+					),
+
+				Position =
+					UDim2.fromOffset(
+						0,
+						56
+					),
+
+				BackgroundTransparency = 1,
+
+				Text =
+					"0",
+
+				TextColor3 =
+					THEME.Green,
+
+				TextSize = 48,
+
+				Font =
+					Enum.Font.GothamBlack,
+
+				ZIndex = 73
+			},
+			MeterInner
+		)
+
+	local Percent =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.new(
+						1,
+						0,
+						0,
+						20
+					),
+
+				Position =
+					UDim2.fromOffset(
+						0,
+						112
+					),
+
+				BackgroundTransparency = 1,
+
+				Text =
+					"MIC LEVEL",
+
+				TextColor3 =
+					THEME.SubText,
+
+				TextSize = 8,
+
+				Font =
+					Enum.Font.GothamBold,
+
+				ZIndex = 73
+			},
+			MeterInner
+		)
+
+	local LevelName =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.new(
+						1,
+						-20,
+						0,
+						20
+					),
+
+				Position =
+					UDim2.fromOffset(
+						10,
+						136
+					),
+
+				BackgroundTransparency = 1,
+
+				Text =
+					"QUIET",
+
+				TextColor3 =
+					THEME.Green,
+
+				TextSize = 10,
+
+				Font =
+					Enum.Font.GothamBlack,
+
+				ZIndex = 73
+			},
+			MeterInner
+		)
+
+	--========================================================
+	-- SOUND CIRCLES
+	--========================================================
+
+	local CirclesFrame =
+		Create(
+			"Frame",
+			{
+				Size =
+					UDim2.new(
+						1,
+						-52,
+						0,
+						90
+					),
+
+				Position =
+					UDim2.fromOffset(
+						26,
+						342
+					),
+
+				BackgroundTransparency = 1,
+
+				ZIndex = 72
+			},
+			GameGui
+		)
+
+	local CirclesLayout =
+		Create(
+			"UIListLayout",
+			{
+				FillDirection =
+					Enum.FillDirection.Horizontal,
+
+				HorizontalAlignment =
+					Enum.HorizontalAlignment.Center,
+
+				VerticalAlignment =
+					Enum.VerticalAlignment.Center,
+
+				Padding =
+					UDim.new(
+						0,
+						7
+					)
+			},
+			CirclesFrame
+		)
+
+	local SoundCircles = {}
+
+	for i = 1,#SOUND_LEVELS do
+
+		local level =
+			SOUND_LEVELS[i]
+
+		local circle =
+			Create(
+				"Frame",
+				{
+					Size =
+						UDim2.fromOffset(
+							61,
+							61
+						),
+
+					BackgroundColor3 =
+						THEME.Panel2,
+
+					BorderSizePixel = 0,
+
+					ZIndex = 73
+				},
+				CirclesFrame
+			)
+
+		Corner(
+			circle,
+			31
+		)
+
+		local color
+
+		if level <= 35 then
+
+			color =
+				THEME.Green
+
+		elseif level <= 65 then
+
+			color =
+				THEME.Orange
+
+		else
+
+			color =
+				THEME.Red
+		end
+
+		Stroke(
+			circle,
+			color,
+			1.5,
+			0.45
+		)
+
+		local number =
+			Create(
+				"TextLabel",
+				{
+					Size =
+						UDim2.new(
+							1,
+							0,
+							0,
+							25
+						),
+
+					Position =
+						UDim2.fromOffset(
+							0,
+							10
+						),
+
+					BackgroundTransparency = 1,
+
+					Text =
+						tostring(
+							level
+						),
+
+					TextColor3 =
+						color,
+
+					TextSize = 15,
+
+					Font =
+						Enum.Font.GothamBlack,
+
+					ZIndex = 74
+				},
+				circle
+			)
+
+		local tiny =
+			Create(
+				"TextLabel",
+				{
+					Size =
+						UDim2.new(
+							1,
+							-4,
+							0,
+							15
+						),
+
+					Position =
+						UDim2.fromOffset(
+							2,
+							34
+						),
+
+					BackgroundTransparency = 1,
+
+					Text =
+						level == 95
+						and
+						"LOSE"
+						or
+						"%",
+
+					TextColor3 =
+						color,
+
+					TextSize = 7,
+
+					Font =
+						Enum.Font.GothamBlack,
+
+					ZIndex = 74
+				},
+				circle
+			)
+
+		SoundCircles[i] = {
+			Frame = circle,
+			Color = color,
+			Level = level
+		}
+	end
+
+	--========================================================
+	-- CONTROLS
+	--========================================================
+
+	local SensitivityLabel =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.fromOffset(
+						115,
+						18
+					),
+
+				Position =
+					UDim2.fromOffset(
+						26,
+						445
+					),
+
+				BackgroundTransparency = 1,
+
+				Text =
+					"SENSITIVITY",
+
+				TextColor3 =
+					THEME.SubText,
+
+				TextSize = 8,
+
+				Font =
+					Enum.Font.GothamBold,
+
+				ZIndex = 72
+			},
+			GameGui
+		)
+
+	local SensLeft =
+		Create(
+			"TextButton",
+			{
+				Size =
+					UDim2.fromOffset(
+						28,
+						28
+					),
+
+				Position =
+					UDim2.fromOffset(
+						140,
+						440
+					),
+
+				BackgroundColor3 =
+					THEME.Panel2,
+
+				Text =
+					"‹",
+
+				TextColor3 =
+					THEME.Text,
+
+				TextSize = 18,
+
+				Font =
+					Enum.Font.GothamBold,
+
+				AutoButtonColor = false,
+
+				ZIndex = 73
+			},
+			GameGui
+		)
+
+	Corner(
+		SensLeft,
+		8
+	)
+
+	local SensitivityValue =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.fromOffset(
+						190,
+						28
+					),
+
+				Position =
+					UDim2.fromOffset(
+						170,
+						440
+					),
+
+				BackgroundColor3 =
+					THEME.Panel2,
+
+				Text =
+					"NORMAL",
+
+				TextColor3 =
+					THEME.Cyan,
+
+				TextSize = 9,
+
+				Font =
+					Enum.Font.GothamBlack,
+
+				ZIndex = 73
+			},
+			GameGui
+		)
+
+	Corner(
+		SensitivityValue,
+		8
+	)
+
+	local SensRight =
+		Create(
+			"TextButton",
+			{
+				Size =
+					UDim2.fromOffset(
+						28,
+						28
+					),
+
+				Position =
+					UDim2.fromOffset(
+						363,
+						440
+					),
+
+				BackgroundColor3 =
+					THEME.Panel2,
+
+				Text =
+					"›",
+
+				TextColor3 =
+					THEME.Text,
+
+				TextSize = 18,
+
+				Font =
+					Enum.Font.GothamBold,
+
+				AutoButtonColor = false,
+
+				ZIndex = 73
+			},
+			GameGui
+		)
+
+	Corner(
+		SensRight,
+		8
+	)
+
+	--========================================================
+	-- CHALLENGE
+	--========================================================
+
+	local ChallengeLabel =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.fromOffset(
+						115,
+						18
+					),
+
+				Position =
+					UDim2.fromOffset(
+						26,
+						479
+					),
+
+				BackgroundTransparency = 1,
+
+				Text =
+					"CHALLENGE",
+
+				TextColor3 =
+					THEME.SubText,
+
+				TextSize = 8,
+
+				Font =
+					Enum.Font.GothamBold,
+
+				ZIndex = 72
+			},
+			GameGui
+		)
+
+	local ChallengeLeft =
+		Create(
+			"TextButton",
+			{
+				Size =
+					UDim2.fromOffset(
+						28,
+						28
+					),
+
+				Position =
+					UDim2.fromOffset(
+						140,
+						474
+					),
+
+				BackgroundColor3 =
+					THEME.Panel2,
+
+				Text =
+					"‹",
+
+				TextColor3 =
+					THEME.Text,
+
+				TextSize = 18,
+
+				Font =
+					Enum.Font.GothamBold,
+
+				AutoButtonColor = false,
+
+				ZIndex = 73
+			},
+			GameGui
+		)
+
+	Corner(
+		ChallengeLeft,
+		8
+	)
+
+	local ChallengeValue =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.fromOffset(
+						190,
+						28
+					),
+
+				Position =
+					UDim2.fromOffset(
+						170,
+						474
+					),
+
+				BackgroundColor3 =
+					THEME.Panel2,
+
+				Text =
+					"KEEP IT DOWN",
+
+				TextColor3 =
+					THEME.Purple,
+
+				TextSize = 9,
+
+				Font =
+					Enum.Font.GothamBlack,
+
+				ZIndex = 73
+			},
+			GameGui
+		)
+
+	Corner(
+		ChallengeValue,
+		8
+	)
+
+	local ChallengeRight =
+		Create(
+			"TextButton",
+			{
+				Size =
+					UDim2.fromOffset(
+						28,
+						28
+					),
+
+				Position =
+					UDim2.fromOffset(
+						363,
+						474
+					),
+
+				BackgroundColor3 =
+					THEME.Panel2,
+
+				Text =
+					"›",
+
+				TextColor3 =
+					THEME.Text,
+
+				TextSize = 18,
+
+				Font =
+					Enum.Font.GothamBold,
+
+				AutoButtonColor = false,
+
+				ZIndex = 73
+			},
+			GameGui
+		)
+
+	Corner(
+		ChallengeRight,
+		8
+	)
+
+	--========================================================
+	-- TIMER / START AREA
+	--========================================================
+
+	local Timer =
+		Create(
+			"TextLabel",
+			{
+				Size =
+					UDim2.fromOffset(
+						115,
+						35
+					),
+
+				Position =
+					UDim2.fromOffset(
+						26,
+						514
+					),
+
+				BackgroundColor3 =
+					THEME.Panel2,
+
+				Text =
+					"READY",
+
+				TextColor3 =
+					THEME.Text,
+
+				TextSize = 15,
+
+				Font =
+					Enum.Font.GothamBlack,
+
+				ZIndex = 73
+			},
+			GameGui
+		)
+
+	Corner(
+		Timer,
+		10
+	)
+
+	local StartButton =
+		Create(
+			"TextButton",
+			{
+				Size =
+					UDim2.fromOffset(
+						347,
+						35
+					),
+
+				Position =
+					UDim2.fromOffset(
+						154,
+						514
+					),
+
+				BackgroundColor3 =
+					THEME.Cyan,
+
+				Text =
+					"START LISTENING",
+
+				TextColor3 =
+					Color3.fromRGB(
+						4,
+						10,
+						16
+					),
+
+				TextSize = 10,
+
+				Font =
+					Enum.Font.GothamBlack,
+
+				AutoButtonColor = false,
+
+				ZIndex = 73
+			},
+			GameGui
+		)
+
+	Corner(
+		StartButton,
+		10
+	)
+
+	--========================================================
+	-- SOUND FOLDER
+	--========================================================
+
+	local SoundFolder =
+		Create(
+			"Folder",
+			{
+				Name =
+					"LowerYourToneSounds"
+			},
+			SoundService
+		)
+
+	local WinSound =
+		Create(
+			"Sound",
+			{
+				Name =
+					"WinSound",
+
+				SoundId =
+					WIN_SOUND_ID,
+
+				Volume = 0.85
+			},
+			SoundFolder
+		)
+
+	local LossSound =
+		Create(
+			"Sound",
+			{
+				Name =
+					"LossSound",
+
+				SoundId =
+					LOSS_SOUND_ID,
+
+				Volume = 0.9
+			},
+			SoundFolder
+		)
+
+	--========================================================
+	-- AUDIO SETUP
+	--========================================================
+
+	local function FindAudioInput()
+
+		local player =
+			GetLocalPlayer()
+
+		if not player then
+			return nil
+		end
+
+		local input
+
+		pcall(function()
+
+			input =
+				player:FindFirstChild(
+					"AudioDeviceInput"
+				)
+
+			if not input then
+
+				input =
+					player:FindFirstChildWhichIsA(
+						"AudioDeviceInput"
+					)
+			end
+		end)
+
+		return input
+	end
+
+	local function SetupAudioAnalyzer()
+
+		-- Clean old audio objects.
+
+		pcall(function()
+
+			if wire then
+				wire:Destroy()
+			end
+
+			if analyzer then
+				analyzer:Destroy()
+			end
+		end)
+
+		wire = nil
+		analyzer = nil
+		audioInput = nil
+
+		audioInput =
+			FindAudioInput()
+
+		if not audioInput then
+
+			MicStatus.Text =
+				"● MICROPHONE: NOT AVAILABLE"
+
+			MicStatus.TextColor3 =
+				THEME.Red
+
+			return false
+		end
+
+		local success =
+			pcall(
+				function()
+
+					analyzer =
+						Instance.new(
+							"AudioAnalyzer"
+						)
+
+					analyzer.Name =
+						"LowerToneAnalyzer"
+
+					analyzer.Parent =
+						GameGui
+
+					analyzer.SpectrumEnabled =
+						false
+
+					wire =
+						Instance.new(
+							"Wire"
+						)
+
+					wire.Name =
+						"LowerToneMicWire"
+
+					wire.SourceInstance =
+						audioInput
+
+					wire.SourceName =
+						"Output"
+
+					wire.TargetInstance =
+						analyzer
+
+					wire.TargetName =
+						"Input"
+
+					wire.Parent =
+						analyzer
+				end
+			)
+
+		if not success
+			or
+			not analyzer
+			or
+			not wire then
+
+			MicStatus.Text =
+				"● MICROPHONE: SETUP FAILED"
+
+			MicStatus.TextColor3 =
+				THEME.Red
+
+			microphoneReady =
+				false
+
+			return false
+		end
+
+		microphoneReady =
+			true
+
+		MicStatus.Text =
+			"● MICROPHONE: READY"
+
+		MicStatus.TextColor3 =
+			THEME.Green
+
+		return true
+	end
+
+	--========================================================
+	-- AUDIO LEVEL CONVERSION
+	--========================================================
+
+	local function ReadMicrophoneLevel()
+
+		if not microphoneReady
+			or
+			not analyzer then
+
+			return 0
+		end
+
+		local rms = 0
+		local peak = 0
+
+		pcall(function()
+
+			rms =
+				tonumber(
+					analyzer.RmsLevel
+				)
+				or
+				0
+
+			peak =
+				tonumber(
+					analyzer.PeakLevel
+				)
+				or
+				0
+		end)
+
+		if rms < 0 then
+			rms = 0
+		end
+
+		if peak < 0 then
+			peak = 0
+		end
+
+		-- Roblox analyzer measurements are audio
+		-- amplitude measurements. Square-rooting the
+		-- power-style value gives us a more useful
+		-- visual amplitude scale.
+
+		local rmsAmplitude =
+			math.sqrt(
+				math.clamp(
+					rms,
+					0,
+					1
+				)
+			)
+
+		local peakAmplitude =
+			math.sqrt(
+				math.clamp(
+					peak,
+					0,
+					1
+				)
+			)
+
+		-- RMS controls the main meter.
+		-- A small amount of peak data catches
+		-- sharper loud moments.
+
+		local mixed =
+			(
+				rmsAmplitude *
+				0.78
+			)
+			+
+			(
+				peakAmplitude *
+				0.22
+			)
+
+		local sensitivity =
+			SENSITIVITIES[
+				sensitivityIndex
+			]
+
+		local value =
+			mixed *
+			100 *
+			sensitivity.Multiplier
+
+		return math.clamp(
+			value,
+			0,
+			100
+		)
+	end
+
+	--========================================================
+	-- DISPLAY LEVEL
+	--========================================================
+
+	local function GetLevelName(
+		level
+	)
+
+		local selected =
+			"QUIET"
+
+		for i,value in ipairs(
+			SOUND_LEVELS
+		) do
+
+			if level >= value then
+
+				selected =
+					LEVEL_NAMES[i]
+			else
+
+				break
+			end
+		end
+
+		return selected
+	end
+
+	local function GetLevelColor(
+		level
+	)
+
+		if level < 35 then
+			return THEME.Green
+		end
+
+		if level < 65 then
+			return THEME.Orange
+		end
+
+		return THEME.Red
+	end
+
+	local function UpdateCircleDisplay(
+		level
+	)
+
+		for _,circle in ipairs(
+			SoundCircles
+		) do
+
+			local active =
+				level >=
+				circle.Level
+
+			if active then
+
+				circle.Frame.BackgroundColor3 =
+					circle.Color:Lerp(
+						Color3.fromRGB(
+							255,
+							255,
+							255
+						),
+						0.08
+					)
+
+			else
+
+				circle.Frame.BackgroundColor3 =
+					THEME.Panel2
+			end
+		end
+	end
+
+	--========================================================
+	-- CHALLENGE LOGIC
+	--========================================================
+
+	local function ChallengeAllowsLevel(
+		level
+	)
+
+		local challenge =
+			CHALLENGES[
+				challengeIndex
+			]
+
+		if challenge ==
+			"KEEP IT DOWN" then
+
+			-- Red begins danger.
+
+			return level < 65
+
+		elseif challenge ==
+			"STAY GREEN" then
+
+			-- Green territory only.
+
+			return level < 35
+
+		elseif challenge ==
+			"NO RED" then
+
+			-- Red is prohibited.
+
+			return level < 65
+
+		elseif challenge ==
+			"NO SPIKES" then
+
+			-- Handled by spike detection.
+
+			return true
+		end
+
+		return true
+	end
+
+	--========================================================
+	-- LOSS
+	--========================================================
+
+	local function Lose(
+		reason
+	)
+
+		if not running then
+			return
+		end
+
+		running = false
+
+		roundEnd = nil
+
+		MicStatus.Text =
+			"● MICROPHONE: ROUND OVER"
+
+		MicStatus.TextColor3 =
+			THEME.Red
+
+		Status = Status or nil
+
+		-- Update the center display.
+
+		LevelNumber.Text =
+			"LOSE"
+
+		LevelNumber.TextSize =
+			34
+
+		LevelNumber.TextColor3 =
+			THEME.Red
+
+		LevelName.Text =
+			"TOO LOUD"
+
+		LevelName.TextColor3 =
+			THEME.Red
+
+		MeterStroke.Color =
+			THEME.Red
+
+		Timer.Text =
+			"FAILED"
+
+		Timer.TextColor3 =
+			THEME.Red
+
+		if reason ==
+			"SPIKE" then
+
+			Subtitle.Text =
+				"WHY: YOUR VOICE SPIKED TOO HIGH"
+
+		else
+
+			Subtitle.Text =
+				"WHY: YOUR SOUND LEVEL WAS TOO HIGH"
+		end
+
+		StartButton.Text =
+			"TRY AGAIN"
+
+		StartButton.BackgroundColor3 =
+			THEME.Red
+
+		pcall(function()
+
+			LossSound:Stop()
+
+			LossSound.TimePosition =
+				0
+
+			LossSound:Play()
+		end)
+	end
+
+	--========================================================
+	-- WIN
+	--========================================================
+
+	local function Win()
+
+		if not running then
+			return
+		end
+
+		running = false
+
+		roundEnd = nil
+
+		LevelNumber.Text =
+			"OK"
+
+		LevelNumber.TextSize =
+			42
+
+		LevelNumber.TextColor3 =
+			THEME.Green
+
+		LevelName.Text =
+			"YOU STAYED QUIET"
+
+		LevelName.TextColor3 =
+			THEME.Green
+
+		MeterStroke.Color =
+			THEME.Green
+
+		Timer.Text =
+			"COMPLETE"
+
+		Timer.TextColor3 =
+			THEME.Green
+
+		MicStatus.Text =
+			"● MICROPHONE: ROUND COMPLETE"
+
+		MicStatus.TextColor3 =
+			THEME.Green
+
+		Subtitle.Text =
+			"YOU CONTROLLED THE NOISE"
+
+		StartButton.Text =
+			"PLAY AGAIN"
+
+		StartButton.BackgroundColor3 =
+			THEME.Green
+
+		pcall(function()
+
+			WinSound:Stop()
+
+			WinSound.TimePosition =
+				0
+
+			WinSound:Play()
+		end)
+	end
+
+	--========================================================
+	-- UPDATE SETTINGS UI
+	--========================================================
+
+	local function UpdateSensitivity()
+
+		SensitivityValue.Text =
+			SENSITIVITIES[
+				sensitivityIndex
+			].Name
+	end
+
+	local function UpdateChallenge()
+
+		ChallengeValue.Text =
+			CHALLENGES[
+				challengeIndex
+			]
+	end
+
+	--========================================================
+	-- START LISTENING
+	--========================================================
+
+	local function StartRound()
+
+		if running then
+			return
+		end
+
+		-- Reset
+
+		smoothLevel = 0
+		peakMemory = 0
+		spikeCount = 0
+		spikeCooldown = 0
+
+		LevelNumber.Text =
+			"0"
+
+		LevelNumber.TextSize =
+			48
+
+		LevelNumber.TextColor3 =
+			THEME.Green
+
+		LevelName.Text =
+			"QUIET"
+
+		LevelName.TextColor3 =
+			THEME.Green
+
+		MeterStroke.Color =
+			THEME.Cyan
+
+		Subtitle.Text =
+			"YOUR VOICE IS THE CONTROLLER"
+
+		StartButton.Text =
+			"STOP ROUND"
+
+		StartButton.BackgroundColor3 =
+			THEME.Cyan
+
+		-- Need audio input.
+
+		if not microphoneReady then
+
+			local success =
+				SetupAudioAnalyzer()
+
+			if not success then
+
+				MicStatus.Text =
+					"● MICROPHONE REQUIRED"
+
+				MicStatus.TextColor3 =
+					THEME.Red
+
+				Subtitle.Text =
+					"ENABLE MICROPHONE / AUDIO API IN THE EXPERIENCE"
+
+				StartButton.Text =
+					"MIC NOT AVAILABLE"
+
+				return
+			end
+		end
+
+		running = true
+
+		MicStatus.Text =
+			"● MICROPHONE: LISTENING"
+
+		MicStatus.TextColor3 =
+			THEME.Green
+
+		local mode =
+			MODES[
+				modeIndex
+			]
+
+		if mode == "Timed" then
+
+			roundEnd =
+				os.clock()
+				+
+				TIMED_OPTIONS[
+					timeIndex
+				]
+
+		else
+
+			roundEnd = nil
+
+			Timer.Text =
+				"ENDLESS"
+		end
+	end
+
+	--========================================================
+	-- SETTINGS
+	--========================================================
+
+	SensLeft.MouseButton1Click:Connect(
+		function()
+
+			if running then
+				return
+			end
+
+			sensitivityIndex -= 1
+
+			if sensitivityIndex < 1 then
+
+				sensitivityIndex =
+					#SENSITIVITIES
+			end
+
+			UpdateSensitivity()
+		end
+	)
+
+	SensRight.MouseButton1Click:Connect(
+		function()
+
+			if running then
+				return
+			end
+
+			sensitivityIndex += 1
+
+			if sensitivityIndex >
+				#SENSITIVITIES then
+
+				sensitivityIndex = 1
+			end
+
+			UpdateSensitivity()
+		end
+	)
+
+	ChallengeLeft.MouseButton1Click:Connect(
+		function()
+
+			if running then
+				return
+			end
+
+			challengeIndex -= 1
+
+			if challengeIndex < 1 then
+
+				challengeIndex =
+					#CHALLENGES
+			end
+
+			UpdateChallenge()
+		end
+	)
+
+	ChallengeRight.MouseButton1Click:Connect(
+		function()
+
+			if running then
+				return
+			end
+
+			challengeIndex += 1
+
+			if challengeIndex >
+				#CHALLENGES then
+
+				challengeIndex = 1
+			end
+
+			UpdateChallenge()
+		end
+	)
+
+	StartButton.MouseButton1Click:Connect(
+		function()
+
+			if running then
+
+				running = false
+
+				roundEnd = nil
+
+				StartButton.Text =
+					"START LISTENING"
+
+				StartButton.BackgroundColor3 =
+					THEME.Cyan
+
+				MicStatus.Text =
+					"● MICROPHONE: READY"
+
+				Timer.Text =
+					"READY"
+
+				return
+			end
+
+			StartRound()
+		end
+	)
+
+	--========================================================
+	-- AUDIO MONITOR
+	--========================================================
+
+	RunService.RenderStepped:Connect(
+		function()
+
+			local rawLevel =
+				ReadMicrophoneLevel()
+
+			-- Smooth microphone level.
+
+			smoothLevel =
+				smoothLevel +
+				(
+					rawLevel -
+					smoothLevel
+				)
+				*
+				0.22
+
+			currentLevel =
+				math.clamp(
+					smoothLevel,
+					0,
+					100
+				)
+
+			LevelNumber.Text =
+				tostring(
+					math.floor(
+						currentLevel
+						+
+						0.5
+					)
+				)
+
+			LevelName.Text =
+				GetLevelName(
+					currentLevel
+				)
+
+			local levelColor =
+				GetLevelColor(
+					currentLevel
+				)
+
+			LevelNumber.TextColor3 =
+				levelColor
+
+			LevelName.TextColor3 =
+				levelColor
+
+			UpdateCircleDisplay(
+				currentLevel
+			)
+
+			-- Main meter ring reacts to sound.
+
+			local pulse =
+				math.clamp(
+					0.98
+					+
+					(
+						currentLevel
+						/
+						100
+					)
+					*
+					0.12,
+					0.98,
+					1.10
+				)
+
+			MeterOuter.Size =
+				UDim2.fromOffset(
+					225 * pulse,
+					225 * pulse
+				)
+
+			MeterOuter.Position =
+				UDim2.new(
+					0.5,
+					-112 * pulse,
+					0,
+					105 -
+					(
+						112 *
+						(
+							pulse -
+							1
+						)
+					)
+				)
+
+			--================================================
+			-- ONLY GAME WHILE ROUND IS RUNNING
+			--================================================
+
+			if not running then
+				return
+			end
+
+			--================================================
+			-- HARD THRESHOLD
+			--================================================
+
+			local challenge =
+				CHALLENGES[
+					challengeIndex
+				]
+
+			if
+				challenge ==
+				"KEEP IT DOWN"
+				or
+				challenge ==
+				"NO RED" then
+
+				if currentLevel >= 95 then
+
+					Lose(
+						"LEVEL"
+					)
+
+					return
+				end
+
+				-- Sustained red causes loss.
+
+				if currentLevel >= 65 then
+
+					peakMemory =
+						math.max(
+							peakMemory,
+							currentLevel
+						)
+
+					if currentLevel >= 78 then
+
+						Lose(
+							"LEVEL"
+						)
+
+						return
+					end
+				end
+
+			elseif challenge ==
+				"STAY GREEN" then
+
+				if currentLevel >= 35 then
+
+					Lose(
+						"LEVEL"
+					)
+
+					return
+				end
+
+			elseif challenge ==
+				"NO SPIKES" then
+
+				--================================================
+				-- SPIKE TRACKING
+				--================================================
+
+				if spikeCooldown > 0 then
+
+					spikeCooldown =
+						math.max(
+							0,
+							spikeCooldown
+							-
+							RunService.Heartbeat:Wait()
+						)
+				end
+
+				if currentLevel >= 80
+					and
+					spikeCooldown <= 0 then
+
+					spikeCount += 1
+
+					spikeCooldown =
+						0.7
+
+					if spikeCount >= 3 then
+
+						Lose(
+							"SPIKE"
+						)
+
+						return
+					end
+				end
+			end
+
+			--================================================
+			-- TIMER
+			--================================================
+
+			if roundEnd then
+
+				local remaining =
+					roundEnd -
+					os.clock()
+
+				if remaining <= 0 then
+
+					Win()
+
+					return
+				end
+
+				Timer.Text =
+					string.format(
+						"%02d",
+						math.ceil(
+							remaining
+						)
+					)
+
+				if remaining <= 10 then
+
+					Timer.TextColor3 =
+						THEME.Orange
+
+				else
+
+					Timer.TextColor3 =
+						THEME.Text
+				end
+			end
+		end
+	)
+
+	--========================================================
+	-- SAFE AUDIO REFRESH
+	--========================================================
+
+	local audioWatcherRunning = true
+
+	task.spawn(
+		function()
+
+			while
+				audioWatcherRunning
+				and
+				GameGui
+				and
+				GameGui.Parent do
+
+				if not microphoneReady then
+
+					SetupAudioAnalyzer()
+				end
+
+				task.wait(
+					1.5
+				)
+			end
+		end
+	)
+
+	--========================================================
+	-- RETURN
+	--========================================================
+
+	local returning = false
+
+	local function ReturnToHub()
+
+		if returning then
+			return
+		end
+
+		returning = true
+
+		audioWatcherRunning =
+			false
+
+		running = false
+
+		roundEnd = nil
+
+		pcall(function()
+
+			if wire then
+				wire:Destroy()
+			end
+
+			if analyzer then
+				analyzer:Destroy()
+			end
+
+			if SoundFolder then
+				SoundFolder:Destroy()
+			end
+		end)
+
+		Tween(
+			GameGui,
+			0.2,
+			{
+				Size =
+					UDim2.fromOffset(
+						570,
+						575
+					),
+
+				BackgroundTransparency =
+					1
+			}
+		)
+
+		task.wait(
+			0.2
+		)
+
+		SafeDestroy(
+			GameGui
+		)
+
+		Hub.Visible =
+			true
+
+		Hub.Size =
+			UDim2.fromOffset(
+				790,
+				540
+			)
+
+		Tween(
+			Hub,
+			0.22,
+			{
+				Size =
+					UDim2.fromOffset(
+						820,
+						560
+					)
+			},
+			Enum.EasingStyle.Back
+		)
+	end
+
+	BackButton.MouseButton1Click:Connect(
+		ReturnToHub
+	)
+
+	CloseButton.MouseButton1Click:Connect(
+		ReturnToHub
+	)
+
+	--========================================================
+	-- DRAGGING
+	--========================================================
+
+	local dragging = false
+	local dragStart
+	local startPosition
+
+	Title.InputBegan:Connect(
+		function(input)
+
+			if input.UserInputType ==
+				Enum.UserInputType.MouseButton1
+				or
+				input.UserInputType ==
+				Enum.UserInputType.Touch then
+
+				dragging = true
+
+				dragStart =
+					input.Position
+
+				startPosition =
+					GameGui.Position
+
+				input.Changed:Connect(
+					function()
+
+						if input.UserInputState ==
+							Enum.UserInputState.End then
+
+							dragging = false
+						end
+					end
+				)
+			end
+		end
+	)
+
+	UserInputService.InputChanged:Connect(
+		function(input)
+
+			if not dragging then
+				return
+			end
+
+			if input.UserInputType ==
+				Enum.UserInputType.MouseMovement
+				or
+				input.UserInputType ==
+				Enum.UserInputType.Touch then
+
+				local delta =
+					input.Position -
+					dragStart
+
+				GameGui.Position =
+					UDim2.new(
+
+						startPosition.X.Scale,
+
+						startPosition.X.Offset
+							+
+							delta.X,
+
+						startPosition.Y.Scale,
+
+						startPosition.Y.Offset
+							+
+							delta.Y
+					)
+			end
+		end
+	)
+
+	--========================================================
+	-- INITIALIZE
+	--========================================================
+
+	UpdateSensitivity()
+	UpdateChallenge()
+
+	MicStatus.Text =
+		"● MICROPHONE: SEARCHING"
+
+	Timer.Text =
+		"READY"
+
+	-- Try immediately.
+
+	SetupAudioAnalyzer()
+
+	GameGui.Size =
+		UDim2.fromOffset(
+			570,
+			575
+		)
+
+	Tween(
+		GameGui,
+		0.3,
+		{
+			Size =
+				UDim2.fromOffset(
+					620,
+					620
+				)
+		},
+		Enum.EasingStyle.Back
+	)
+
+	--========================================================
+	-- INTERNAL ANIMATION
+	--========================================================
+
+	task.spawn(
+		function()
+
+			while
+				GameGui
+				and
+				GameGui.Parent do
+
+				local t =
+					os.clock()
+
+				local p =
+					(
+						math.sin(
+							t * 0.7
+						)
+						+ 1
+					)
+					/
+					2
+
+				pcall(function()
+
+					GlowA.BackgroundTransparency =
+						0.975 -
+						p * 0.02
+
+					GlowB.BackgroundTransparency =
+						0.98 -
+						p * 0.018
+
+				end)
+
+				task.wait(
+					0.035
+				)
+			end
+		end
+	)
+end
+
+--============================================================
+-- GAME CARD CREATOR
 --============================================================
 
 local function CreateGameCard(
 	gameData
 )
 
-	local Card = Create(
-		"Frame",
-		{
-			Name =
-				gameData.Name,
+	local Card =
+		Create(
+			"Frame",
+			{
+				Name =
+					gameData.Name,
 
-			Size =
-				UDim2.fromOffset(
-					286,
-					178
-				),
+				Size =
+					UDim2.fromOffset(
+						286,
+						178
+					),
 
-			BackgroundColor3 =
-				THEME.Panel2,
+				BackgroundColor3 =
+					THEME.Panel2,
 
-			BorderSizePixel = 0,
+				BorderSizePixel = 0,
 
-			LayoutOrder =
-				gameData.LayoutOrder,
+				LayoutOrder =
+					gameData.LayoutOrder,
 
-			ZIndex = 32
-		},
-		GamesContainer
-	)
+				ZIndex = 32
+			},
+			GamesContainer
+		)
 
 	Corner(
 		Card,
@@ -4703,71 +7024,65 @@ local function CreateGameCard(
 		Card,
 		gameData.Accent,
 		1.1,
-		0.7
+		0.68
 	)
 
-	--========================================================
-	-- ACCENT BAR
-	--========================================================
+	local AccentBar =
+		Create(
+			"Frame",
+			{
+				Size =
+					UDim2.fromOffset(
+						4,
+						120
+					),
 
-	local AccentBar = Create(
-		"Frame",
-		{
-			Size =
-				UDim2.fromOffset(
-					4,
-					120
-				),
+				Position =
+					UDim2.fromOffset(
+						0,
+						18
+					),
 
-			Position =
-				UDim2.fromOffset(
-					0,
-					18
-				),
+				BackgroundColor3 =
+					gameData.Accent,
 
-			BackgroundColor3 =
-				gameData.Accent,
+				BorderSizePixel = 0,
 
-			BorderSizePixel = 0,
-
-			ZIndex = 33
-		},
-		Card
-	)
+				ZIndex = 33
+			},
+			Card
+		)
 
 	Corner(
 		AccentBar,
 		4
 	)
 
-	--========================================================
-	-- ICON
-	--========================================================
+	local IconBox =
+		Create(
+			"Frame",
+			{
+				Size =
+					UDim2.fromOffset(
+						58,
+						58
+					),
 
-	local IconBox = Create(
-		"Frame",
-		{
-			Size =
-				UDim2.fromOffset(
-					58,
-					58
-				),
+				Position =
+					UDim2.fromOffset(
+						16,
+						16
+					),
 
-			Position =
-				UDim2.fromOffset(
-					16,
-					16
-				),
+				BackgroundColor3 =
+					THEME.Panel3,
 
-			BackgroundColor3 =
-				THEME.Panel3,
+				BorderSizePixel = 0,
 
-			BorderSizePixel = 0,
-
-			ZIndex = 33
-		},
-		Card
-	)
+				ZIndex = 33
+			},
+			Card
+		)
 
 	Corner(
 		IconBox,
@@ -4808,16 +7123,12 @@ local function CreateGameCard(
 		IconBox
 	)
 
-	--========================================================
-	-- CATEGORY
-	--========================================================
-
 	Create(
 		"TextLabel",
 		{
 			Size =
 				UDim2.fromOffset(
-					170,
+					180,
 					18
 				),
 
@@ -4848,10 +7159,6 @@ local function CreateGameCard(
 		Card
 	)
 
-	--========================================================
-	-- NAME
-	--========================================================
-
 	Create(
 		"TextLabel",
 		{
@@ -4875,7 +7182,13 @@ local function CreateGameCard(
 			TextColor3 =
 				THEME.Text,
 
-			TextSize = 15,
+			TextSize =
+				gameData.Name ==
+				"LOWER YOUR TONE"
+				and
+				13
+				or
+				15,
 
 			Font =
 				Enum.Font.GothamBlack,
@@ -4887,10 +7200,6 @@ local function CreateGameCard(
 		},
 		Card
 	)
-
-	--========================================================
-	-- DESCRIPTION
-	--========================================================
 
 	Create(
 		"TextLabel",
@@ -4933,10 +7242,6 @@ local function CreateGameCard(
 		Card
 	)
 
-	--========================================================
-	-- STATUS
-	--========================================================
-
 	Create(
 		"TextLabel",
 		{
@@ -4975,74 +7280,68 @@ local function CreateGameCard(
 			Font =
 				Enum.Font.GothamBlack,
 
-			TextXAlignment =
-				Enum.TextXAlignment.Left,
-
 			ZIndex = 34
 		},
 		Card
 	)
 
-	--========================================================
-	-- PLAY
-	--========================================================
+	local PlayButton =
+		Create(
+			"TextButton",
+			{
+				Size =
+					UDim2.fromOffset(
+						105,
+						31
+					),
 
-	local PlayButton = Create(
-		"TextButton",
-		{
-			Size =
-				UDim2.fromOffset(
-					105,
-					31
-				),
+				Position =
+					UDim2.new(
+						1,
+						-120,
+						1,
+						-45
+					),
 
-			Position =
-				UDim2.new(
-					1,
-					-120,
-					1,
-					-45
-				),
+				BackgroundColor3 =
+					gameData.Status ==
+					"PLAYABLE"
+					and
+					gameData.Accent
+					or
+					THEME.Panel3,
 
-			BackgroundColor3 =
-				gameData.Status ==
-				"PLAYABLE"
-				and
-				gameData.Accent
-				or
-				THEME.Panel3,
+				Text =
+					gameData.Status ==
+					"PLAYABLE"
+					and
+					"PLAY  →"
+					or
+					"SOON",
 
-			Text =
-				gameData.Status ==
-				"PLAYABLE"
-				and
-				"PLAY  →"
-				or
-				"SOON",
+				TextColor3 =
+					gameData.Status ==
+					"PLAYABLE"
+					and
+					Color3.fromRGB(
+						4,
+						10,
+						18
+					)
+					or
+					THEME.SubText,
 
-			TextColor3 =
-				gameData.Status ==
-				"PLAYABLE"
-				and
-				Color3.fromRGB(
-					5,
-					10,
-					18
-				)
-				or
-				THEME.SubText,
+				TextSize = 10,
 
-			TextSize = 10,
+				Font =
+					Enum.Font.GothamBlack,
 
-			Font =
-				Enum.Font.GothamBlack,
+				AutoButtonColor = false,
 
-			AutoButtonColor = false,
-
-			ZIndex = 34
-		},
-		Card
-	)
+				ZIndex = 34
+			},
+			Card
+		)
 
 	Corner(
 		PlayButton,
@@ -5050,7 +7349,7 @@ local function CreateGameCard(
 	)
 
 	--========================================================
-	-- HOVER
+	-- CARD ANIMATION
 	--========================================================
 
 	Card.MouseEnter:Connect(
@@ -5063,8 +7362,8 @@ local function CreateGameCard(
 					BackgroundColor3 =
 						Color3.fromRGB(
 							22,
-							28,
-							45
+							29,
+							47
 						)
 				}
 			)
@@ -5075,32 +7374,12 @@ local function CreateGameCard(
 				{
 					BackgroundColor3 =
 						Color3.fromRGB(
-							29,
-							37,
-							59
+							30,
+							39,
+							62
 						)
 				}
 			)
-
-			if gameData.Status ==
-				"PLAYABLE" then
-
-				Tween(
-					PlayButton,
-					0.12,
-					{
-						BackgroundColor3 =
-							gameData.Accent:Lerp(
-								Color3.fromRGB(
-									255,
-									255,
-									255
-								),
-								0.16
-							)
-					}
-				)
-			end
 		end
 	)
 
@@ -5124,6 +7403,36 @@ local function CreateGameCard(
 						THEME.Panel3
 				}
 			)
+		end
+	)
+
+	PlayButton.MouseEnter:Connect(
+		function()
+
+			if gameData.Status ==
+				"PLAYABLE" then
+
+				Tween(
+					PlayButton,
+					0.12,
+					{
+						BackgroundColor3 =
+							gameData.Accent:Lerp(
+								Color3.fromRGB(
+									255,
+									255,
+									255
+								),
+								0.15
+							)
+					}
+				)
+			end
+		end
+	)
+
+	PlayButton.MouseLeave:Connect(
+		function()
 
 			if gameData.Status ==
 				"PLAYABLE" then
@@ -5141,7 +7450,7 @@ local function CreateGameCard(
 	)
 
 	--========================================================
-	-- LAUNCH
+	-- LAUNCH GAME
 	--========================================================
 
 	PlayButton.MouseButton1Click:Connect(
@@ -5157,6 +7466,11 @@ local function CreateGameCard(
 				"COLOR PANIC!" then
 
 				LaunchColorPanic()
+
+			elseif gameData.Name ==
+				"LOWER YOUR TONE" then
+
+				LaunchLowerYourTone()
 			end
 		end
 	)
@@ -5165,7 +7479,7 @@ local function CreateGameCard(
 end
 
 --============================================================
--- BUILD GAMES
+-- CREATE ALL GAME CARDS
 --============================================================
 
 for _,gameData in ipairs(
@@ -5186,7 +7500,8 @@ GamesLayout:GetPropertyChangedSignal(
 			UDim2.fromOffset(
 				0,
 				GamesLayout.AbsoluteContentSize.Y
-				+ 15
+				+
+				15
 			)
 	end
 )
@@ -5195,7 +7510,8 @@ GamesContainer.CanvasSize =
 	UDim2.fromOffset(
 		0,
 		GamesLayout.AbsoluteContentSize.Y
-		+ 15
+		+
+		15
 	)
 
 --============================================================
@@ -5204,14 +7520,12 @@ GamesContainer.CanvasSize =
 
 local function SetNav(active)
 
-	local buttons = {
-		GamesNav,
-		SettingsNav,
-		AboutNav
-	}
-
 	for _,button in ipairs(
-		buttons
+		{
+			GamesNav,
+			SettingsNav,
+			AboutNav
+		}
 	) do
 
 		button.BackgroundColor3 =
@@ -5257,7 +7571,7 @@ SettingsNav.MouseButton1Click:Connect(
 			"SETTINGS"
 
 		HeaderSub.Text =
-			"Arcade preferences will live here."
+			"Global DONK ARCADE preferences."
 
 		GamesContainer.Visible =
 			false
@@ -5275,7 +7589,7 @@ AboutNav.MouseButton1Click:Connect(
 			"DONK ARCADE"
 
 		HeaderSub.Text =
-			"One hub. All your games. More chaos."
+			"Different games. Different mechanics. One arcade."
 
 		GamesContainer.Visible =
 			false
@@ -5297,7 +7611,8 @@ Header.InputBegan:Connect(
 
 		if input.UserInputType ==
 			Enum.UserInputType.MouseButton1
-			or input.UserInputType ==
+			or
+			input.UserInputType ==
 			Enum.UserInputType.Touch then
 
 			hubDragging = true
@@ -5331,7 +7646,8 @@ UserInputService.InputChanged:Connect(
 
 		if input.UserInputType ==
 			Enum.UserInputType.MouseMovement
-			or input.UserInputType ==
+			or
+			input.UserInputType ==
 			Enum.UserInputType.Touch then
 
 			local delta =
@@ -5344,19 +7660,21 @@ UserInputService.InputChanged:Connect(
 					hubStartPosition.X.Scale,
 
 					hubStartPosition.X.Offset
-						+ delta.X,
+						+
+						delta.X,
 
 					hubStartPosition.Y.Scale,
 
 					hubStartPosition.Y.Offset
-						+ delta.Y
+						+
+						delta.Y
 				)
 		end
 	end
 )
 
 --============================================================
--- HUB EFFECT ANIMATION
+-- HUB ANIMATION
 --============================================================
 
 task.spawn(
@@ -5364,7 +7682,8 @@ task.spawn(
 
 		while
 			ScreenGui
-			and ScreenGui.Parent do
+			and
+			ScreenGui.Parent do
 
 			local t =
 				os.clock()
@@ -5376,69 +7695,55 @@ task.spawn(
 					)
 					+ 1
 				)
-				/ 2
+				/
+				2
 
-			-- Glow animation stays INSIDE HUB.
+			pcall(function()
 
-			pcall(
-				function()
+				HubGlowA.BackgroundTransparency =
+					0.96 -
+					pulse * 0.025
 
-					Glow1.BackgroundTransparency =
-						0.95 -
-						pulse * 0.025
-
-					Glow2.BackgroundTransparency =
-						0.955 -
-						pulse * 0.02
-
-					Ring1.Rotation =
-						t * 4
-
-					Ring2.Rotation =
-						-t * 7
-
-					HubGradient.Rotation =
-						25 +
-						math.sin(
-							t * 0.25
-						) * 8
-				end
-			)
+				HubGlowB.BackgroundTransparency =
+					0.97 -
+					pulse * 0.02
+			end)
 
 			for _,data in ipairs(
-				BackgroundParticles
+				HubParticles
 			) do
 
-				local object =
-					data.Object
-
-				if object
-					and object.Parent then
+				if data.Object
+					and
+					data.Object.Parent then
 
 					local x =
-						data.BaseX
+						data.X
 						+
 						math.sin(
-							t * data.Speed
+							t *
+							data.Speed
 							+
 							data.Phase
 						)
-						* 0.012
+						*
+						0.012
 
 					local y =
-						data.BaseY
+						data.Y
 						+
 						math.cos(
-							t * (
-								data.Speed
-								* 0.7
-							)
+							t *
+							data.Speed
+							*
+							0.7
 							+
 							data.Phase
 						)
-						* 0.018
+						*
+						0.018
 
-					object.Position =
+					data.Object.Position =
 						UDim2.new(
 							x,
 							0,
