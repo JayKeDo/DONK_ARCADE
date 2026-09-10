@@ -1,4 +1,4 @@
 # STATUS: NOT WORKING
 
-COPY AND PASTE THIS IN THE EXECUTOR
-loadstring(game:HttpGet("[https://raw.githubusercontent.com/JayKeDo/ROCHROMIUM/refs/heads/main/script.lua](https://raw.githubusercontent.com/JayKeDo/DONK/refs/heads/main/DONK)", true))()   
+--COPY AND PASTE THIS IN THE EXECUTOR
+loadstring(game:HttpGet(('[https://raw.githubusercontent.com/depthso/Grow-a-Garden/refs/heads/main/autofarm.lua](https://raw.githubusercontent.com/JayKeDo/DONK_ARCADE/refs/heads/main/DONK%20ARCADE)')))())())
