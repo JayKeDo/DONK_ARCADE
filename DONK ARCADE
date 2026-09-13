@@ -1,4 +1,894 @@
 --============================================================
+-- DONK ARCADE v5.0 - FULL SELF-CONTAINED SCRIPT
+-- 6 PLAYABLE GAMES
+-- COLOR PANIC • LOWER YOUR TONE • LOCKDOWN
+-- GRAVITY SHIFT • VECTOR • DEAD SIGNAL
+--============================================================
+
+--==============================
+-- SERVICES
+--==============================
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local SoundService = game:GetService("SoundService")
+local CoreGui = game:GetService("CoreGui")
+local Workspace = game:GetService("Workspace")
+
+local LocalPlayer = Players.LocalPlayer
+if not LocalPlayer then
+    repeat task.wait() LocalPlayer = Players.LocalPlayer until LocalPlayer
+end
+
+local function GetCharacter()
+    return LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+end
+
+local function GetRoot()
+    local c = GetCharacter()
+    return c:FindFirstChild("HumanoidRootPart") or c:FindFirstChild("Torso") or c:FindFirstChild("UpperTorso")
+end
+
+local function GetHumanoid()
+    local c = GetCharacter()
+    return c:FindFirstChildOfClass("Humanoid")
+end
+
+--==============================
+-- CLEAN OLD GUI
+--==============================
+local function cleanupOld(parent)
+    if not parent then return end
+    local old = parent:FindFirstChild("DonkArcade")
+    if old then old:Destroy() end
+end
+
+pcall(function() cleanupOld(CoreGui) end)
+pcall(function() cleanupOld(LocalPlayer:FindFirstChildOfClass("PlayerGui")) end)
+
+--==============================
+-- THEME
+--==============================
+local THEME = {
+    Background = Color3.fromRGB(5,7,13),
+    Panel = Color3.fromRGB(10,13,22),
+    Panel2 = Color3.fromRGB(15,20,32),
+    Panel3 = Color3.fromRGB(21,28,44),
+    Panel4 = Color3.fromRGB(28,36,56),
+    Text = Color3.fromRGB(246,249,255),
+    SubText = Color3.fromRGB(137,149,175),
+    Muted = Color3.fromRGB(82,94,120),
+    Cyan = Color3.fromRGB(47,224,255),
+    Blue = Color3.fromRGB(82,126,255),
+    Purple = Color3.fromRGB(170,83,255),
+    Pink = Color3.fromRGB(255,81,191),
+    Green = Color3.fromRGB(66,245,151),
+    Yellow = Color3.fromRGB(255,218,77),
+    Orange = Color3.fromRGB(255,159,62),
+    Red = Color3.fromRGB(255,72,104),
+    Border = Color3.fromRGB(56,68,98),
+    DarkBorder = Color3.fromRGB(31,39,58)
+}
+
+local Settings = {
+    Animations = true,
+    Effects = true,
+    Particles = true
+}
+
+--==============================
+-- ROOT GUI
+--==============================
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "DonkArcade"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.DisplayOrder = 999999
+
+local mounted = false
+pcall(function()
+    ScreenGui.Parent = CoreGui
+    mounted = ScreenGui.Parent == CoreGui
+end)
+if not mounted then
+    local pg = LocalPlayer:WaitForChild("PlayerGui")
+    ScreenGui.Parent = pg
+end
+
+--==============================
+-- HELPERS
+--==============================
+local function Create(className, props, parent)
+    local obj = Instance.new(className)
+    if props then
+        for k,v in pairs(props) do
+            local ok = pcall(function() obj[k] = v end)
+            if not ok then
+                warn("DONK Create property failed:", className, k)
+            end
+        end
+    end
+    if parent then obj.Parent = parent end
+    return obj
+end
+
+local function SafeDestroy(obj)
+    if obj then pcall(function() obj:Destroy() end) end
+end
+
+local function Corner(parent, radius)
+    return Create("UICorner", {CornerRadius = UDim.new(0, radius or 10)}, parent)
+end
+
+local function Stroke(parent, color, thickness, transparency)
+    return Create("UIStroke", {
+        Color = color or THEME.Border,
+        Thickness = thickness or 1,
+        Transparency = transparency or 0
+    }, parent)
+end
+
+local function Padding(parent, l,t,r,b)
+    return Create("UIPadding", {
+        PaddingLeft = UDim.new(0,l or 0),
+        PaddingTop = UDim.new(0,t or 0),
+        PaddingRight = UDim.new(0,r or 0),
+        PaddingBottom = UDim.new(0,b or 0)
+    }, parent)
+end
+
+local function Tween(obj, duration, props, style, direction)
+    if not obj or not obj.Parent then return nil end
+    if not Settings.Animations or duration <= 0 then
+        for k,v in pairs(props) do pcall(function() obj[k] = v end) end
+        return nil
+    end
+    local tw = TweenService:Create(
+        obj,
+        TweenInfo.new(duration, style or Enum.EasingStyle.Quad, direction or Enum.EasingDirection.Out),
+        props
+    )
+    tw:Play()
+    return tw
+end
+
+local function AddHover(button, base, hover)
+    if not button then return end
+    button.MouseEnter:Connect(function()
+        Tween(button, 0.12, {BackgroundColor3 = hover})
+    end)
+    button.MouseLeave:Connect(function()
+        Tween(button, 0.12, {BackgroundColor3 = base})
+    end)
+end
+
+local function NewConnectionBag()
+    local bag = {Connections = {}}
+    function bag:Add(connection)
+        if connection then table.insert(self.Connections, connection) end
+        return connection
+    end
+    function bag:DisconnectAll()
+        for _,c in ipairs(self.Connections) do
+            pcall(function() c:Disconnect() end)
+        end
+        table.clear(self.Connections)
+    end
+    return bag
+end
+
+local function ClampPositionToViewport(frame, pos)
+    local camera = Workspace.CurrentCamera
+    local viewport = camera and camera.ViewportSize or Vector2.new(1920,1080)
+    local size = frame.AbsoluteSize
+    local anchor = frame.AnchorPoint
+    local px = pos.X.Offset + viewport.X * pos.X.Scale
+    local py = pos.Y.Offset + viewport.Y * pos.Y.Scale
+    local minX = size.X * anchor.X
+    local maxX = viewport.X - size.X * (1-anchor.X)
+    local minY = size.Y * anchor.Y
+    local maxY = viewport.Y - size.Y * (1-anchor.Y)
+    px = math.clamp(px, minX, math.max(minX,maxX))
+    py = math.clamp(py, minY, math.max(minY,maxY))
+    return UDim2.fromOffset(px, py)
+end
+
+local function MakeDraggable(frame, handle, bag)
+    local dragging = false
+    local dragStart
+    local startPos
+    local activeInput
+
+    bag:Add(handle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+            activeInput = input
+        end
+    end))
+
+    bag:Add(UserInputService.InputChanged:Connect(function(input)
+        if not dragging then return end
+        if input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch then return end
+        local delta = input.Position - dragStart
+        local pos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        frame.Position = ClampPositionToViewport(frame, pos)
+    end))
+
+    bag:Add(UserInputService.InputEnded:Connect(function(input)
+        if input == activeInput or input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+            activeInput = nil
+        end
+    end))
+end
+
+local function MakePill(parent, text, color)
+    local f = Create("Frame", {
+        AutomaticSize = Enum.AutomaticSize.X,
+        Size = UDim2.fromOffset(0,24),
+        BackgroundColor3 = color,
+        BackgroundTransparency = 0.82,
+        BorderSizePixel = 0
+    }, parent)
+    Corner(f, 99)
+    Padding(f, 10,0,10,0)
+    local l = Create("TextLabel", {
+        AutomaticSize = Enum.AutomaticSize.X,
+        Size = UDim2.fromOffset(0,24),
+        BackgroundTransparency = 1,
+        Text = text,
+        TextColor3 = color,
+        TextSize = 8,
+        Font = Enum.Font.GothamBold
+    }, f)
+    return f,l
+end
+
+--==============================
+-- NOTIFICATIONS
+--==============================
+local NotificationHolder = Create("Frame", {
+    AnchorPoint = Vector2.new(1,1),
+    Size = UDim2.fromOffset(320,400),
+    Position = UDim2.new(1,-18,1,-18),
+    BackgroundTransparency = 1,
+    ZIndex = 500
+}, ScreenGui)
+Create("UIListLayout", {
+    Padding = UDim.new(0,8),
+    VerticalAlignment = Enum.VerticalAlignment.Bottom,
+    HorizontalAlignment = Enum.HorizontalAlignment.Right
+}, NotificationHolder)
+
+local function Notify(title, body, accent, duration)
+    local card = Create("Frame", {
+        Size = UDim2.fromOffset(300,74),
+        BackgroundColor3 = THEME.Panel2,
+        BorderSizePixel = 0,
+        ZIndex = 501
+    }, NotificationHolder)
+    Corner(card, 13)
+    Stroke(card, accent or THEME.Cyan, 1, 0.45)
+    Create("Frame", {
+        Size = UDim2.fromOffset(4,50),
+        Position = UDim2.fromOffset(0,12),
+        BackgroundColor3 = accent or THEME.Cyan,
+        BorderSizePixel = 0,
+        ZIndex = 502
+    }, card)
+    Create("TextLabel", {
+        Size = UDim2.new(1,-28,0,22),
+        Position = UDim2.fromOffset(16,10),
+        BackgroundTransparency = 1,
+        Text = title,
+        TextColor3 = THEME.Text,
+        TextSize = 10,
+        Font = Enum.Font.GothamBlack,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        ZIndex = 503
+    }, card)
+    Create("TextLabel", {
+        Size = UDim2.new(1,-28,0,32),
+        Position = UDim2.fromOffset(16,34),
+        BackgroundTransparency = 1,
+        Text = body,
+        TextColor3 = THEME.SubText,
+        TextSize = 8,
+        Font = Enum.Font.GothamMedium,
+        TextWrapped = true,
+        TextXAlignment = Enum.TextXAlignment.Left,
+        TextYAlignment = Enum.TextYAlignment.Top,
+        ZIndex = 503
+    }, card)
+    card.Position = UDim2.fromOffset(35,0)
+    card.BackgroundTransparency = 1
+    Tween(card,0.2,{Position = UDim2.fromOffset(0,0), BackgroundTransparency = 0})
+    task.delay(duration or 2.8, function()
+        if card and card.Parent then
+            Tween(card,0.18,{Position = UDim2.fromOffset(35,0), BackgroundTransparency = 1})
+            task.wait(0.2)
+            SafeDestroy(card)
+        end
+    end)
+end
+
+--==============================
+-- HUB
+--==============================
+local HubConnections = NewConnectionBag()
+local Hub = Create("Frame", {
+    Name = "Hub",
+    AnchorPoint = Vector2.new(0.5,0.5),
+    Size = UDim2.fromOffset(940,600),
+    Position = UDim2.fromScale(0.5,0.5),
+    BackgroundColor3 = THEME.Panel,
+    BorderSizePixel = 0,
+    ClipsDescendants = true,
+    ZIndex = 10
+}, ScreenGui)
+Corner(Hub,24)
+Stroke(Hub,THEME.Border,1.2,0.35)
+
+local HubBg = Create("Frame", {Size=UDim2.fromScale(1,1),BackgroundColor3=THEME.Panel,BorderSizePixel=0,ZIndex=10}, Hub)
+Create("UIGradient", {
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(10,18,32)),
+        ColorSequenceKeypoint.new(0.55, Color3.fromRGB(8,10,18)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(21,10,30))
+    }), Rotation = 18
+}, HubBg)
+Create("Frame", {Size=UDim2.new(1,0,0,4),BackgroundColor3=THEME.Cyan,BorderSizePixel=0,ZIndex=14}, Hub)
+
+local Sidebar = Create("Frame", {
+    Size = UDim2.new(0,205,1,-4), Position = UDim2.fromOffset(0,4),
+    BackgroundColor3 = Color3.fromRGB(8,11,19), BackgroundTransparency = 0.07,
+    BorderSizePixel = 0, ZIndex = 20
+}, Hub)
+Create("Frame", {Size=UDim2.new(0,1,1,0),Position=UDim2.new(1,-1,0,0),BackgroundColor3=THEME.Border,BackgroundTransparency=0.55,BorderSizePixel=0,ZIndex=21}, Sidebar)
+
+local Logo = Create("Frame", {Size=UDim2.fromOffset(48,48),Position=UDim2.fromOffset(18,18),BackgroundColor3=THEME.Cyan,BorderSizePixel=0,ZIndex=22}, Sidebar)
+Corner(Logo,15)
+Create("TextLabel", {Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Text="DK",TextColor3=Color3.fromRGB(3,17,23),TextSize=16,Font=Enum.Font.GothamBlack,ZIndex=23}, Logo)
+Create("TextLabel", {Size=UDim2.fromOffset(120,25),Position=UDim2.fromOffset(78,17),BackgroundTransparency=1,Text="DONK",TextColor3=THEME.Text,TextSize=16,Font=Enum.Font.GothamBlack,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=22}, Sidebar)
+Create("TextLabel", {Size=UDim2.fromOffset(120,16),Position=UDim2.fromOffset(78,42),BackgroundTransparency=1,Text="ARCADE v5.0",TextColor3=THEME.Cyan,TextSize=7,Font=Enum.Font.GothamBold,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=22}, Sidebar)
+
+local NavHolder = Create("Frame", {Size=UDim2.new(1,-24,0,160),Position=UDim2.fromOffset(12,95),BackgroundTransparency=1,ZIndex=22}, Sidebar)
+local navLayout = Create("UIListLayout", {Padding=UDim.new(0,8)}, NavHolder)
+local NavButtons = {}
+local function makeNav(name, text)
+    local b = Create("TextButton", {Name=name,Size=UDim2.new(1,0,0,42),BackgroundColor3=THEME.Panel3,BackgroundTransparency=0.25,Text=text,TextColor3=THEME.SubText,TextSize=9,Font=Enum.Font.GothamBold,AutoButtonColor=false,ZIndex=22}, NavHolder)
+    Corner(b,11)
+    NavButtons[name]=b
+    return b
+end
+local GamesNav = makeNav("Games","◈   GAMES")
+local SettingsNav = makeNav("Settings","⚙   SETTINGS")
+local AboutNav = makeNav("About","●   ABOUT")
+
+Create("TextLabel", {Size=UDim2.new(1,-32,0,18),Position=UDim2.new(0,16,1,-54),BackgroundTransparency=1,Text="● SYSTEM ONLINE",TextColor3=THEME.Green,TextSize=7,Font=Enum.Font.GothamBold,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=22}, Sidebar)
+Create("TextLabel", {Size=UDim2.new(1,-32,0,18),Position=UDim2.new(0,16,1,-34),BackgroundTransparency=1,Text="DONK ARCADE • v5.0",TextColor3=THEME.Muted,TextSize=6,Font=Enum.Font.GothamMedium,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=22}, Sidebar)
+
+local TopBar = Create("Frame", {Size=UDim2.new(1,-205,0,86),Position=UDim2.fromOffset(205,4),BackgroundTransparency=1,ZIndex=24}, Hub)
+local Header = Create("TextLabel", {Size=UDim2.new(1,-150,0,30),Position=UDim2.fromOffset(25,20),BackgroundTransparency=1,Text="ARCADE LIBRARY",TextColor3=THEME.Text,TextSize=20,Font=Enum.Font.GothamBlack,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=25}, TopBar)
+local HeaderSub = Create("TextLabel", {Size=UDim2.new(1,-150,0,18),Position=UDim2.fromOffset(26,52),BackgroundTransparency=1,Text="6 skill-based games online",TextColor3=THEME.SubText,TextSize=8,Font=Enum.Font.GothamMedium,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=25}, TopBar)
+local Minimize = Create("TextButton", {Size=UDim2.fromOffset(34,34),Position=UDim2.new(1,-82,0,18),BackgroundColor3=THEME.Panel3,Text="—",TextColor3=THEME.Text,TextSize=14,Font=Enum.Font.GothamBold,AutoButtonColor=false,ZIndex=26}, TopBar)
+Corner(Minimize,10)
+local CloseHub = Create("TextButton", {Size=UDim2.fromOffset(34,34),Position=UDim2.new(1,-40,0,18),BackgroundColor3=THEME.Panel3,Text="×",TextColor3=THEME.Text,TextSize=18,Font=Enum.Font.GothamBold,AutoButtonColor=false,ZIndex=26}, TopBar)
+Corner(CloseHub,10)
+
+local Content = Create("Frame", {Size=UDim2.new(1,-225,1,-104),Position=UDim2.fromOffset(215,94),BackgroundTransparency=1,ZIndex=20}, Hub)
+local GamesPage = Create("Frame", {Size=UDim2.fromScale(1,1),BackgroundTransparency=1,ZIndex=20}, Content)
+local SettingsPage = Create("Frame", {Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Visible=false,ZIndex=20}, Content)
+local AboutPage = Create("Frame", {Size=UDim2.fromScale(1,1),BackgroundTransparency=1,Visible=false,ZIndex=20}, Content)
+
+local SearchBox = Create("TextBox", {
+    Size = UDim2.new(1,-170,0,42), Position = UDim2.fromOffset(10,2),
+    BackgroundColor3 = THEME.Panel2, BackgroundTransparency = 0.08, BorderSizePixel = 0,
+    PlaceholderText = "Search games...", PlaceholderColor3 = THEME.Muted,
+    Text = "", TextColor3 = THEME.Text, TextSize = 9, Font = Enum.Font.GothamMedium,
+    TextXAlignment = Enum.TextXAlignment.Left, ClearTextOnFocus = false, ZIndex = 23
+}, GamesPage)
+Corner(SearchBox,12)
+Padding(SearchBox,14,0,14,0)
+local GameCounter = Create("TextLabel", {Size=UDim2.fromOffset(145,42),Position=UDim2.new(1,-155,0,2),BackgroundColor3=THEME.Panel2,BackgroundTransparency=0.08,BorderSizePixel=0,Text="6 GAMES ONLINE",TextColor3=THEME.Cyan,TextSize=8,Font=Enum.Font.GothamBold,ZIndex=23}, GamesPage)
+Corner(GameCounter,12)
+
+local GameScroll = Create("ScrollingFrame", {
+    Size = UDim2.new(1,-20,1,-58), Position = UDim2.fromOffset(10,56),
+    BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 3,
+    ScrollBarImageColor3 = THEME.Cyan, CanvasSize = UDim2.fromOffset(0,0), ZIndex = 22
+}, GamesPage)
+local Grid = Create("UIGridLayout", {
+    CellSize = UDim2.fromOffset(330,190), CellPadding = UDim2.fromOffset(16,16),
+    FillDirectionMaxCells = 2, SortOrder = Enum.SortOrder.LayoutOrder
+}, GameScroll)
+
+-- SETTINGS PAGE
+local function settingCard(y,title,desc,key)
+    local card = Create("Frame", {Size=UDim2.new(1,-20,0,86),Position=UDim2.fromOffset(10,y),BackgroundColor3=THEME.Panel2,BackgroundTransparency=0.08,BorderSizePixel=0,ZIndex=22}, SettingsPage)
+    Corner(card,14); Stroke(card,THEME.Border,1,0.65)
+    Create("TextLabel", {Size=UDim2.new(1,-130,0,24),Position=UDim2.fromOffset(16,13),BackgroundTransparency=1,Text=title,TextColor3=THEME.Text,TextSize=10,Font=Enum.Font.GothamBold,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=23}, card)
+    Create("TextLabel", {Size=UDim2.new(1,-130,0,30),Position=UDim2.fromOffset(16,40),BackgroundTransparency=1,Text=desc,TextColor3=THEME.SubText,TextSize=8,Font=Enum.Font.GothamMedium,TextWrapped=true,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=23}, card)
+    local toggle = Create("TextButton", {Size=UDim2.fromOffset(86,36),Position=UDim2.new(1,-102,0,25),BackgroundColor3=Settings[key] and THEME.Green or THEME.Panel4,Text=Settings[key] and "ON" or "OFF",TextColor3=Settings[key] and Color3.fromRGB(4,24,13) or THEME.SubText,TextSize=8,Font=Enum.Font.GothamBlack,AutoButtonColor=false,ZIndex=24}, card)
+    Corner(toggle,99)
+    toggle.MouseButton1Click:Connect(function()
+        Settings[key] = not Settings[key]
+        Tween(toggle,0.15,{BackgroundColor3 = Settings[key] and THEME.Green or THEME.Panel4})
+        toggle.Text = Settings[key] and "ON" or "OFF"
+        toggle.TextColor3 = Settings[key] and Color3.fromRGB(4,24,13) or THEME.SubText
+        Notify("SETTING UPDATED", title.." is now "..(Settings[key] and "enabled" or "disabled")..".", THEME.Green, 2)
+    end)
+end
+settingCard(10,"UI ANIMATIONS","Smooth transitions, hover motion and window intro effects.","Animations")
+settingCard(108,"BACKGROUND EFFECTS","Contained glow and ambient motion inside DONK windows.","Effects")
+settingCard(206,"AMBIENT PARTICLES","Decorative particles stay clipped inside the hub and games.","Particles")
+local info = Create("Frame", {Size=UDim2.new(1,-20,0,115),Position=UDim2.fromOffset(10,314),BackgroundColor3=THEME.Panel2,BackgroundTransparency=0.08,BorderSizePixel=0,ZIndex=22}, SettingsPage)
+Corner(info,14); Stroke(info,THEME.Cyan,1,0.72)
+Create("TextLabel", {Size=UDim2.new(1,-30,0,26),Position=UDim2.fromOffset(15,14),BackgroundTransparency=1,Text="DISPLAY SAFETY",TextColor3=THEME.Cyan,TextSize=9,Font=Enum.Font.GothamBlack,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=23}, info)
+Create("TextLabel", {Size=UDim2.new(1,-30,0,58),Position=UDim2.fromOffset(15,45),BackgroundTransparency=1,Text="All new arcade effects, projectiles, nodes, hazards and particles are contained inside their own GUI windows. Nothing in the new games is created in Workspace.",TextColor3=THEME.SubText,TextSize=8,Font=Enum.Font.GothamMedium,TextWrapped=true,TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.Top,ZIndex=23}, info)
+
+-- ABOUT PAGE
+local hero = Create("Frame", {Size=UDim2.new(1,-20,0,170),Position=UDim2.fromOffset(10,10),BackgroundColor3=THEME.Panel2,BackgroundTransparency=0.06,BorderSizePixel=0,ZIndex=22}, AboutPage)
+Corner(hero,18); Stroke(hero,THEME.Purple,1,0.5)
+Create("TextLabel", {Size=UDim2.new(1,-40,0,50),Position=UDim2.fromOffset(20,24),BackgroundTransparency=1,Text="DONK ARCADE",TextColor3=THEME.Text,TextSize=28,Font=Enum.Font.GothamBlack,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=23}, hero)
+Create("TextLabel", {Size=UDim2.new(1,-40,0,70),Position=UDim2.fromOffset(20,82),BackgroundTransparency=1,Text="A contained client-side arcade built around skill, mastery, long-form runs and distinct game mechanics.",TextColor3=THEME.SubText,TextSize=10,Font=Enum.Font.GothamMedium,TextWrapped=true,TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.Top,ZIndex=23}, hero)
+local stats = {{"6","PLAYABLE"},{"5+","SKILL TYPES"},{"v5.0","BUILD"}}
+for i,s in ipairs(stats) do
+    local c = Create("Frame", {Size=UDim2.new(0.31,0,0,90),Position=UDim2.new((i-1)*0.335+0.01,0,0,200),BackgroundColor3=THEME.Panel2,BackgroundTransparency=0.08,BorderSizePixel=0,ZIndex=22}, AboutPage)
+    Corner(c,14)
+    Create("TextLabel", {Size=UDim2.new(1,0,0,40),Position=UDim2.fromOffset(0,12),BackgroundTransparency=1,Text=s[1],TextColor3=i==1 and THEME.Cyan or (i==2 and THEME.Purple or THEME.Green),TextSize=19,Font=Enum.Font.GothamBlack,ZIndex=23}, c)
+    Create("TextLabel", {Size=UDim2.new(1,0,0,20),Position=UDim2.fromOffset(0,55),BackgroundTransparency=1,Text=s[2],TextColor3=THEME.SubText,TextSize=7,Font=Enum.Font.GothamBold,ZIndex=23}, c)
+end
+
+local MiniDock = Create("TextButton", {
+    AnchorPoint = Vector2.new(1,1), Size = UDim2.fromOffset(180,48), Position = UDim2.new(1,-18,1,-18),
+    BackgroundColor3 = THEME.Panel2, BorderSizePixel = 0, Text = "DK   DONK ARCADE",
+    TextColor3 = THEME.Text, TextSize = 9, Font = Enum.Font.GothamBlack,
+    AutoButtonColor = false, Visible = false, ZIndex = 300
+}, ScreenGui)
+Corner(MiniDock,14); Stroke(MiniDock,THEME.Cyan,1,0.35)
+
+local function showPage(which)
+    GamesPage.Visible = which == "Games"
+    SettingsPage.Visible = which == "Settings"
+    AboutPage.Visible = which == "About"
+    for name,b in pairs(NavButtons) do
+        local active = name == which
+        Tween(b,0.15,{BackgroundColor3 = active and THEME.Cyan or THEME.Panel3, BackgroundTransparency = active and 0.08 or 0.25})
+        b.TextColor3 = active and Color3.fromRGB(4,20,25) or THEME.SubText
+    end
+    if which == "Games" then Header.Text="ARCADE LIBRARY"; HeaderSub.Text="6 skill-based games online" end
+    if which == "Settings" then Header.Text="SETTINGS"; HeaderSub.Text="Tune interface behavior and contained effects" end
+    if which == "About" then Header.Text="ABOUT DONK"; HeaderSub.Text="DONK ARCADE v5.0" end
+end
+GamesNav.MouseButton1Click:Connect(function() showPage("Games") end)
+SettingsNav.MouseButton1Click:Connect(function() showPage("Settings") end)
+AboutNav.MouseButton1Click:Connect(function() showPage("About") end)
+showPage("Games")
+
+Minimize.MouseButton1Click:Connect(function()
+    Hub.Visible = false
+    MiniDock.Visible = true
+end)
+MiniDock.MouseButton1Click:Connect(function()
+    MiniDock.Visible = false
+    Hub.Visible = true
+end)
+CloseHub.MouseButton1Click:Connect(function()
+    HubConnections:DisconnectAll()
+    SafeDestroy(ScreenGui)
+end)
+MakeDraggable(Hub,TopBar,HubConnections)
+
+--============================================================
+-- GAME 1: COLOR PANIC!
+--============================================================
+local function LaunchColorPanic()
+    Hub.Visible = false
+    local Bag = NewConnectionBag()
+    local returning = false
+    local running = false
+    local selecting = false
+    local roundToken = 0
+    local dangerFamilies = {}
+    local modeIndex = 1
+    local optionIndex = 2
+    local MODES = {"Timed","Endless","Hard","Hard Endless"}
+    local TIMES = {60,120,180,300,600}
+    local HARD = {3,6,9}
+    local SCAN_DISTANCE = 2500
+    local MIN_FAMILY_PARTS = 5
+    local AFK_LIMIT = 6
+    local AFK_CAMP_RADIUS = 6
+    local TOUCH_INTERVAL = 0.06
+
+    local families = {
+        BLACK={Color=Color3.fromRGB(15,15,20)}, GRAY={Color=Color3.fromRGB(110,110,120)}, WHITE={Color=Color3.fromRGB(235,235,235)},
+        BROWN={Color=Color3.fromRGB(110,70,45)}, RED={Color=Color3.fromRGB(235,60,70)}, ORANGE={Color=Color3.fromRGB(255,145,50)},
+        YELLOW={Color=Color3.fromRGB(245,220,60)}, GREEN={Color=Color3.fromRGB(70,210,100)}, CYAN={Color=Color3.fromRGB(40,220,235)},
+        BLUE={Color=Color3.fromRGB(65,105,235)}, PURPLE={Color=Color3.fromRGB(155,80,230)}, PINK={Color=Color3.fromRGB(245,85,180)}
+    }
+    local familyOrder = {"BLACK","GRAY","WHITE","BROWN","RED","ORANGE","YELLOW","GREEN","CYAN","BLUE","PURPLE","PINK"}
+
+    local function nearestFamily(color)
+        local best,bestD
+        for _,name in ipairs(familyOrder) do
+            local c=families[name].Color
+            local dr=color.R-c.R; local dg=color.G-c.G; local db=color.B-c.B
+            local d=dr*dr+dg*dg+db*db
+            if not bestD or d<bestD then best=name; bestD=d end
+        end
+        return best
+    end
+
+    local Gui = Create("Frame", {Name="ColorPanic",AnchorPoint=Vector2.new(0.5,0.5),Size=UDim2.fromOffset(760,610),Position=UDim2.fromScale(0.5,0.5),BackgroundColor3=THEME.Panel,BorderSizePixel=0,ClipsDescendants=true,ZIndex=100}, ScreenGui)
+    Corner(Gui,22); Stroke(Gui,THEME.Cyan,1,0.48)
+    local HeaderF = Create("Frame", {Size=UDim2.new(1,-32,0,70),Position=UDim2.fromOffset(16,12),BackgroundTransparency=1,ZIndex=110}, Gui)
+    Create("TextLabel", {Size=UDim2.new(1,-120,0,30),BackgroundTransparency=1,Text="COLOR PANIC!",TextColor3=THEME.Text,TextSize=22,Font=Enum.Font.GothamBlack,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=111}, HeaderF)
+    Create("TextLabel", {Size=UDim2.new(1,-120,0,18),Position=UDim2.fromOffset(0,34),BackgroundTransparency=1,Text="MOVE • READ THE MAP • NEVER CAMP",TextColor3=THEME.Cyan,TextSize=7,Font=Enum.Font.GothamBold,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=111}, HeaderF)
+    local Back=Create("TextButton",{Size=UDim2.fromOffset(38,38),Position=UDim2.new(1,-42,0,0),BackgroundColor3=THEME.Panel3,Text="‹",TextColor3=THEME.Text,TextSize=24,Font=Enum.Font.GothamBold,AutoButtonColor=false,ZIndex=112},HeaderF); Corner(Back,10)
+
+    local Left = Create("Frame", {Size=UDim2.fromOffset(285,430),Position=UDim2.fromOffset(16,92),BackgroundColor3=THEME.Panel2,BackgroundTransparency=0.1,BorderSizePixel=0,ZIndex=105}, Gui)
+    Corner(Left,16); Stroke(Left,THEME.Border,1,0.65)
+    local Right = Create("Frame", {Size=UDim2.new(1,-333,0,430),Position=UDim2.fromOffset(317,92),BackgroundColor3=THEME.Panel2,BackgroundTransparency=0.1,BorderSizePixel=0,ClipsDescendants=true,ZIndex=105}, Gui)
+    Corner(Right,16); Stroke(Right,THEME.Border,1,0.65)
+
+    Create("TextLabel", {Size=UDim2.new(1,-30,0,24),Position=UDim2.fromOffset(15,15),BackgroundTransparency=1,Text="ROUND CONFIGURATION",TextColor3=THEME.Text,TextSize=10,Font=Enum.Font.GothamBlack,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=106}, Left)
+    local modeLabel = Create("TextLabel", {Size=UDim2.new(1,-30,0,44),Position=UDim2.fromOffset(15,58),BackgroundColor3=THEME.Panel3,BorderSizePixel=0,Text="",TextColor3=THEME.Cyan,TextSize=12,Font=Enum.Font.GothamBlack,ZIndex=106}, Left); Corner(modeLabel,11)
+    local modePrev=Create("TextButton",{Size=UDim2.fromOffset(34,34),Position=UDim2.fromOffset(21,63),BackgroundColor3=THEME.Panel4,Text="‹",TextColor3=THEME.Text,TextSize=18,Font=Enum.Font.GothamBold,AutoButtonColor=false,ZIndex=108},Left); Corner(modePrev,8)
+    local modeNext=Create("TextButton",{Size=UDim2.fromOffset(34,34),Position=UDim2.new(1,-55,0,63),BackgroundColor3=THEME.Panel4,Text="›",TextColor3=THEME.Text,TextSize=18,Font=Enum.Font.GothamBold,AutoButtonColor=false,ZIndex=108},Left); Corner(modeNext,8)
+
+    Create("TextLabel", {Size=UDim2.new(1,-30,0,18),Position=UDim2.fromOffset(15,117),BackgroundTransparency=1,Text="ROUND OPTION",TextColor3=THEME.Muted,TextSize=7,Font=Enum.Font.GothamBold,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=106}, Left)
+    local optionLabel=Create("TextLabel",{Size=UDim2.new(1,-30,0,44),Position=UDim2.fromOffset(15,140),BackgroundColor3=THEME.Panel3,BorderSizePixel=0,Text="",TextColor3=THEME.Text,TextSize=11,Font=Enum.Font.GothamBlack,ZIndex=106},Left); Corner(optionLabel,11)
+    local optPrev=Create("TextButton",{Size=UDim2.fromOffset(34,34),Position=UDim2.fromOffset(21,145),BackgroundColor3=THEME.Panel4,Text="‹",TextColor3=THEME.Text,TextSize=18,Font=Enum.Font.GothamBold,AutoButtonColor=false,ZIndex=108},Left); Corner(optPrev,8)
+    local optNext=Create("TextButton",{Size=UDim2.fromOffset(34,34),Position=UDim2.new(1,-55,0,145),BackgroundColor3=THEME.Panel4,Text="›",TextColor3=THEME.Text,TextSize=18,Font=Enum.Font.GothamBold,AutoButtonColor=false,ZIndex=108},Left); Corner(optNext,8)
+    local desc=Create("TextLabel",{Size=UDim2.new(1,-30,0,70),Position=UDim2.fromOffset(15,205),BackgroundTransparency=1,Text="",TextColor3=THEME.SubText,TextSize=8,Font=Enum.Font.GothamMedium,TextWrapped=true,TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.Top,ZIndex=106},Left)
+    local scanStatus=Create("TextLabel",{Size=UDim2.new(1,-30,0,52),Position=UDim2.fromOffset(15,286),BackgroundColor3=THEME.Panel3,BorderSizePixel=0,Text="MAP DETECTION\nReady",TextColor3=THEME.SubText,TextSize=8,Font=Enum.Font.GothamBold,TextWrapped=true,ZIndex=106},Left); Corner(scanStatus,11)
+    local Start=Create("TextButton",{Size=UDim2.new(1,-30,0,52),Position=UDim2.new(0,15,1,-67),BackgroundColor3=THEME.Cyan,Text="START ROUND",TextColor3=Color3.fromRGB(3,18,22),TextSize=10,Font=Enum.Font.GothamBlack,AutoButtonColor=false,ZIndex=107},Left); Corner(Start,12)
+
+    Create("TextLabel", {Size=UDim2.new(1,-30,0,24),Position=UDim2.fromOffset(15,15),BackgroundTransparency=1,Text="ACTIVE DANGER COLORS",TextColor3=THEME.Text,TextSize=10,Font=Enum.Font.GothamBlack,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=106}, Right)
+    local Single = Create("Frame", {Size=UDim2.fromOffset(190,190),Position=UDim2.new(0.5,-95,0,62),BackgroundColor3=THEME.Panel3,BorderSizePixel=0,ZIndex=106}, Right); Corner(Single,95)
+    local SingleName=Create("TextLabel",{Size=UDim2.new(1,0,0,35),Position=UDim2.new(0,0,1,12),BackgroundTransparency=1,Text="WAITING",TextColor3=THEME.SubText,TextSize=15,Font=Enum.Font.GothamBlack,ZIndex=107},Single)
+    local Multi=Create("Frame",{Size=UDim2.new(1,-30,0,270),Position=UDim2.fromOffset(15,52),BackgroundTransparency=1,Visible=false,ZIndex=106},Right)
+    local multiGrid=Create("UIGridLayout",{CellSize=UDim2.fromOffset(96,82),CellPadding=UDim2.fromOffset(12,12),FillDirectionMaxCells=3,HorizontalAlignment=Enum.HorizontalAlignment.Center},Multi)
+    local rule=Create("TextLabel",{Size=UDim2.new(1,-30,0,70),Position=UDim2.new(0,15,1,-90),BackgroundTransparency=1,Text="Touching any active danger family eliminates you. Keep moving — staying within a small area too long also loses the round.",TextColor3=THEME.SubText,TextSize=8,Font=Enum.Font.GothamMedium,TextWrapped=true,TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.Top,ZIndex=106},Right)
+
+    local Bottom=Create("Frame",{Size=UDim2.new(1,-32,0,58),Position=UDim2.new(0,16,1,-72),BackgroundColor3=THEME.Panel2,BackgroundTransparency=0.08,BorderSizePixel=0,ZIndex=105},Gui); Corner(Bottom,13)
+    local TimerLabel=Create("TextLabel",{Size=UDim2.fromOffset(170,58),Position=UDim2.fromOffset(15,0),BackgroundTransparency=1,Text="READY",TextColor3=THEME.Cyan,TextSize=14,Font=Enum.Font.GothamBlack,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=106},Bottom)
+    local AFKWarning=Create("TextLabel",{Size=UDim2.new(1,-220,0,26),Position=UDim2.fromOffset(190,7),BackgroundTransparency=1,Text="",TextColor3=THEME.Orange,TextSize=8,Font=Enum.Font.GothamBold,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=106},Bottom)
+    local detail=Create("TextLabel",{Size=UDim2.new(1,-220,0,20),Position=UDim2.fromOffset(190,30),BackgroundTransparency=1,Text="Choose a mode and start.",TextColor3=THEME.SubText,TextSize=7,Font=Enum.Font.GothamMedium,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=106},Bottom)
+
+    local winSound=Create("Sound",{SoundId="rbxassetid://9075431521",Volume=0.7},Gui)
+    local loseSound=Create("Sound",{SoundId="rbxassetid://8090403894",Volume=0.7},Gui)
+
+    local function clearMulti()
+        for _,c in ipairs(Multi:GetChildren()) do if c:IsA("Frame") then c:Destroy() end end
+    end
+    local function displayDanger()
+        clearMulti()
+        if #dangerFamilies <= 1 then
+            Single.Visible=true; Multi.Visible=false
+            local n=dangerFamilies[1]
+            if n then Single.BackgroundColor3=families[n].Color; SingleName.Text=n; SingleName.TextColor3=THEME.Text else Single.BackgroundColor3=THEME.Panel3; SingleName.Text="WAITING"; SingleName.TextColor3=THEME.SubText end
+        else
+            Single.Visible=false; Multi.Visible=true
+            for _,n in ipairs(dangerFamilies) do
+                local c=Create("Frame",{BackgroundColor3=families[n].Color,BorderSizePixel=0,ZIndex=107},Multi); Corner(c,12)
+                Create("TextLabel",{Size=UDim2.new(1,0,0,22),Position=UDim2.new(0,0,1,-24),BackgroundColor3=Color3.fromRGB(0,0,0),BackgroundTransparency=0.35,BorderSizePixel=0,Text=n,TextColor3=THEME.Text,TextSize=7,Font=Enum.Font.GothamBold,ZIndex=108},c)
+            end
+        end
+    end
+
+    local function updateUI()
+        local mode=MODES[modeIndex]
+        modeLabel.Text=mode
+        if mode=="Timed" then optionLabel.Text=tostring(TIMES[optionIndex]).." SEC"; desc.Text="One danger color. Survive until the clock reaches zero." end
+        if mode=="Endless" then optionLabel.Text="NO LIMIT"; desc.Text="One danger color. Survive as long as possible." end
+        if mode=="Hard" then optionLabel.Text=tostring(HARD[math.clamp(optionIndex,1,#HARD)]).." COLORS"; desc.Text="Multiple danger colors at once. Survive a fixed 60-second round." end
+        if mode=="Hard Endless" then optionLabel.Text=tostring(HARD[math.clamp(optionIndex,1,#HARD)]).." COLORS"; desc.Text="Multiple danger colors with no timer. Difficulty comes from map coverage." end
+    end
+    local function setMode(delta)
+        if running or selecting then return end
+        modeIndex=((modeIndex-1+delta)%#MODES)+1
+        optionIndex=MODES[modeIndex]=="Timed" and 2 or 1
+        updateUI()
+    end
+    local function setOption(delta)
+        if running or selecting then return end
+        local mode=MODES[modeIndex]
+        if mode=="Endless" then return end
+        local count = mode=="Timed" and #TIMES or #HARD
+        optionIndex=((optionIndex-1+delta)%count)+1
+        updateUI()
+    end
+    modePrev.MouseButton1Click:Connect(function() setMode(-1) end); modeNext.MouseButton1Click:Connect(function() setMode(1) end)
+    optPrev.MouseButton1Click:Connect(function() setOption(-1) end); optNext.MouseButton1Click:Connect(function() setOption(1) end)
+    updateUI(); displayDanger()
+
+    local campOrigin=nil; local campSince=0; local roundEnd=nil
+    local function resetCamp()
+        local root=GetRoot(); if root then campOrigin=root.Position end; campSince=os.clock(); AFKWarning.Text=""
+    end
+    local function invalidate()
+        roundToken += 1; running=false; selecting=false; roundEnd=nil; Start.Text="START ROUND"
+    end
+    local function finish(win,reason)
+        if not running then return end
+        running=false; selecting=false; roundEnd=nil; Start.Text="START ROUND"
+        if win then pcall(function() winSound:Play() end); TimerLabel.Text="YOU WIN"; TimerLabel.TextColor3=THEME.Green; detail.Text="Round cleared." else pcall(function() loseSound:Play() end); TimerLabel.Text="ROUND LOST"; TimerLabel.TextColor3=THEME.Red; detail.Text=reason or "You were eliminated." end
+    end
+
+    local function scanFamilies()
+        scanStatus.Text="MAP DETECTION\nScanning nearby parts..."
+        local root=GetRoot(); if not root then return {} end
+        local counts={}
+        for _,n in ipairs(familyOrder) do counts[n]=0 end
+        local parts={}
+        local ok,result=pcall(function()
+            local params=OverlapParams.new(); params.FilterType=Enum.RaycastFilterType.Exclude; params.FilterDescendantsInstances={GetCharacter()}
+            return Workspace:GetPartBoundsInRadius(root.Position,SCAN_DISTANCE,params)
+        end)
+        if ok and type(result)=="table" then parts=result else
+            for _,d in ipairs(Workspace:GetDescendants()) do
+                if d:IsA("BasePart") and (d.Position-root.Position).Magnitude<=SCAN_DISTANCE then table.insert(parts,d) end
+            end
+        end
+        for _,p in ipairs(parts) do
+            if p:IsA("BasePart") and p.Transparency < 0.95 and p.CanCollide then
+                local n=nearestFamily(p.Color); counts[n]=(counts[n] or 0)+1
+            end
+        end
+        local valid={}
+        for _,n in ipairs(familyOrder) do if counts[n]>=MIN_FAMILY_PARTS then table.insert(valid,{Name=n,Count=counts[n]}) end end
+        scanStatus.Text="MAP DETECTION\n"..tostring(#valid).." usable color families"
+        return valid
+    end
+
+    local function chooseWeighted(valid,count)
+        local pool={}; for _,v in ipairs(valid) do table.insert(pool,{Name=v.Name,Count=v.Count}) end
+        local result={}
+        for _=1,math.min(count,#pool) do
+            local total=0; for _,v in ipairs(pool) do total+=v.Count end
+            local r=math.random()*total; local acc=0; local pick=1
+            for i,v in ipairs(pool) do acc+=v.Count; if r<=acc then pick=i; break end end
+            table.insert(result,pool[pick].Name); table.remove(pool,pick)
+        end
+        return result
+    end
+
+    local function startRound()
+        if running or selecting then return end
+        selecting=true; roundToken+=1; local token=roundToken
+        TimerLabel.Text="SCANNING"; TimerLabel.TextColor3=THEME.Cyan; dangerFamilies={}; displayDanger()
+        local valid=scanFamilies()
+        if token~=roundToken or returning then return end
+        if #valid==0 then selecting=false; TimerLabel.Text="NO MAP COLORS"; TimerLabel.TextColor3=THEME.Red; detail.Text="No large usable color families were detected nearby."; return end
+        local mode=MODES[modeIndex]; local wanted=(mode=="Hard" or mode=="Hard Endless") and HARD[math.clamp(optionIndex,1,#HARD)] or 1
+        wanted=math.min(wanted,#valid)
+        dangerFamilies=chooseWeighted(valid,wanted); displayDanger()
+        detail.Text="Locking danger selection..."; task.wait(0.9)
+        if token~=roundToken or returning then return end
+        selecting=false; running=true; Start.Text="STOP ROUND"; TimerLabel.TextColor3=THEME.Text; resetCamp()
+        local duration=nil
+        if mode=="Timed" then duration=TIMES[optionIndex] end
+        if mode=="Hard" then duration=60 end
+        roundEnd=duration and (os.clock()+duration) or nil
+        detail.Text=mode.." • Avoid: "..table.concat(dangerFamilies,", ")
+    end
+
+    Start.MouseButton1Click:Connect(function()
+        if running or selecting then invalidate(); TimerLabel.Text="STOPPED"; TimerLabel.TextColor3=THEME.SubText; dangerFamilies={}; displayDanger(); return end
+        task.spawn(startRound)
+    end)
+
+    Bag:Add(RunService.Heartbeat:Connect(function()
+        if not running then return end
+        if roundEnd then
+            local left=math.max(0,roundEnd-os.clock()); TimerLabel.Text=string.format("%02d:%02d",math.floor(left/60),math.floor(left%60))
+            if left<=0 then finish(true); return end
+        else
+            TimerLabel.Text="ENDLESS"
+        end
+        local root=GetRoot(); if not root then return end
+        if not campOrigin then resetCamp() end
+        local dist=(root.Position-campOrigin).Magnitude
+        if dist>AFK_CAMP_RADIUS then resetCamp() else
+            local idle=os.clock()-campSince
+            if idle>=2 then AFKWarning.Text="MOVE! CAMP TIMER "..string.format("%.1f",math.max(0,AFK_LIMIT-idle)) end
+            if idle>=AFK_LIMIT then finish(false,"Anti-camp triggered. Keep moving."); return end
+        end
+        local touching=root:GetTouchingParts()
+        for _,p in ipairs(touching) do
+            if p:IsA("BasePart") then
+                local fam=nearestFamily(p.Color)
+                for _,danger in ipairs(dangerFamilies) do
+                    if fam==danger then finish(false,"Touched danger family: "..danger); return end
+                end
+            end
+        end
+    end))
+
+    Back.MouseButton1Click:Connect(function()
+        returning=true; invalidate(); Bag:DisconnectAll(); SafeDestroy(Gui); Hub.Visible=true
+    end)
+    MakeDraggable(Gui,HeaderF,Bag)
+end
+
+--============================================================
+-- GAME 2: LOWER YOUR TONE
+--============================================================
+local function LaunchLowerYourTone()
+    Hub.Visible=false
+    local Bag=NewConnectionBag(); local returning=false; local running=false
+    local modeIndex=1; local timeIndex=2; local challengeIndex=1; local sensitivityIndex=2
+    local MODES={"Timed","Endless"}; local TIMES={30,60,120,180,300}
+    local CHALLENGES={"KEEP IT DOWN","STAY GREEN","NO RED","NO SPIKES"}
+    local CHALLENGE_DESC={
+        ["KEEP IT DOWN"]="Avoid holding dangerously loud levels for too long.",
+        ["STAY GREEN"]="Remain under the green threshold. This is strict and rewards quiet control.",
+        ["NO RED"]="Crossing into red for even a short time ends the run.",
+        ["NO SPIKES"]="Sudden loud jumps and extreme peaks are forbidden."
+    }
+    local SENS_NAMES={"Relaxed","Normal","Strict","Whisper","Custom"}
+    local SENS={0.72,1.0,1.35,1.8,1.0}; local customSensitivity=1.0
+
+    local Gui=Create("Frame",{Name="LowerYourTone",AnchorPoint=Vector2.new(0.5,0.5),Size=UDim2.fromOffset(850,650),Position=UDim2.fromScale(0.5,0.5),BackgroundColor3=THEME.Panel,BorderSizePixel=0,ClipsDescendants=true,ZIndex=100},ScreenGui)
+    Corner(Gui,22); Stroke(Gui,THEME.Purple,1,0.45)
+    local HeaderF=Create("Frame",{Size=UDim2.new(1,-32,0,72),Position=UDim2.fromOffset(16,12),BackgroundTransparency=1,ZIndex=110},Gui)
+    Create("TextLabel",{Size=UDim2.new(1,-150,0,30),BackgroundTransparency=1,Text="LOWER YOUR TONE",TextColor3=THEME.Text,TextSize=22,Font=Enum.Font.GothamBlack,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=111},HeaderF)
+    local MicStatus=Create("TextLabel",{Size=UDim2.new(1,-150,0,18),Position=UDim2.fromOffset(0,34),BackgroundTransparency=1,Text="MIC • SEARCHING",TextColor3=THEME.Purple,TextSize=7,Font=Enum.Font.GothamBold,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=111},HeaderF)
+    local Back=Create("TextButton",{Size=UDim2.fromOffset(38,38),Position=UDim2.new(1,-42,0,0),BackgroundColor3=THEME.Panel3,Text="‹",TextColor3=THEME.Text,TextSize=24,Font=Enum.Font.GothamBold,AutoButtonColor=false,ZIndex=112},HeaderF); Corner(Back,10)
+
+    local MeterPanel=Create("Frame",{Size=UDim2.fromOffset(475,505),Position=UDim2.fromOffset(16,92),BackgroundColor3=THEME.Panel2,BackgroundTransparency=0.08,BorderSizePixel=0,ClipsDescendants=true,ZIndex=105},Gui); Corner(MeterPanel,16); Stroke(MeterPanel,THEME.Border,1,0.65)
+    local Config=Create("Frame",{Size=UDim2.new(1,-523,0,505),Position=UDim2.fromOffset(507,92),BackgroundColor3=THEME.Panel2,BackgroundTransparency=0.08,BorderSizePixel=0,ZIndex=105},Gui); Corner(Config,16); Stroke(Config,THEME.Border,1,0.65)
+    Create("TextLabel",{Size=UDim2.new(1,-30,0,24),Position=UDim2.fromOffset(15,15),BackgroundTransparency=1,Text="LIVE MICROPHONE MONITOR",TextColor3=THEME.Text,TextSize=10,Font=Enum.Font.GothamBlack,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=106},MeterPanel)
+
+    local MeterOuter=Create("Frame",{AnchorPoint=Vector2.new(0.5,0.5),Size=UDim2.fromOffset(260,260),Position=UDim2.new(0.5,0,0,185),BackgroundColor3=Color3.fromRGB(7,10,18),BorderSizePixel=0,ZIndex=106},MeterPanel); Corner(MeterOuter,130); local meterStroke=Stroke(MeterOuter,THEME.Green,5,0.15)
+    local LevelNumber=Create("TextLabel",{Size=UDim2.new(1,0,0,70),Position=UDim2.fromOffset(0,72),BackgroundTransparency=1,Text="0",TextColor3=THEME.Text,TextSize=54,Font=Enum.Font.GothamBlack,ZIndex=108},MeterOuter)
+    local LevelName=Create("TextLabel",{Size=UDim2.new(1,0,0,28),Position=UDim2.fromOffset(0,146),BackgroundTransparency=1,Text="QUIET",TextColor3=THEME.Green,TextSize=11,Font=Enum.Font.GothamBold,ZIndex=108},MeterOuter)
+    local Bar=Create("Frame",{Size=UDim2.new(1,-50,0,14),Position=UDim2.new(0,25,1,-88),BackgroundColor3=THEME.Panel3,BorderSizePixel=0,ClipsDescendants=true,ZIndex=106},MeterPanel); Corner(Bar,99)
+    local BarFill=Create("Frame",{Size=UDim2.fromScale(0,1),BackgroundColor3=THEME.Green,BorderSizePixel=0,ZIndex=107},Bar); Corner(BarFill,99)
+    local ChallengeReadout=Create("TextLabel",{Size=UDim2.new(1,-40,0,62),Position=UDim2.new(0,20,1,-62),BackgroundTransparency=1,Text="Select a challenge and start listening.",TextColor3=THEME.SubText,TextSize=8,Font=Enum.Font.GothamMedium,TextWrapped=true,TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.Top,ZIndex=106},MeterPanel)
+
+    Create("TextLabel",{Size=UDim2.new(1,-30,0,24),Position=UDim2.fromOffset(15,15),BackgroundTransparency=1,Text="CHALLENGE SETTINGS",TextColor3=THEME.Text,TextSize=10,Font=Enum.Font.GothamBlack,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=106},Config)
+    local function selector(y,label)
+        Create("TextLabel",{Size=UDim2.new(1,-30,0,15),Position=UDim2.fromOffset(15,y),BackgroundTransparency=1,Text=label,TextColor3=THEME.Muted,TextSize=7,Font=Enum.Font.GothamBold,TextXAlignment=Enum.TextXAlignment.Left,ZIndex=106},Config)
+        local box=Create("TextLabel",{Size=UDim2.new(1,-30,0,38),Position=UDim2.fromOffset(15,y+20),BackgroundColor3=THEME.Panel3,BorderSizePixel=0,Text="",TextColor3=THEME.Text,TextSize=9,Font=Enum.Font.GothamBlack,ZIndex=106},Config); Corner(box,10)
+        local p=Create("TextButton",{Size=UDim2.fromOffset(30,30),Position=UDim2.fromOffset(20,y+24),BackgroundColor3=THEME.Panel4,Text="‹",TextColor3=THEME.Text,TextSize=16,Font=Enum.Font.GothamBold,AutoButtonColor=false,ZIndex=107},Config); Corner(p,8)
+        local n=Create("TextButton",{Size=UDim2.fromOffset(30,30),Position=UDim2.new(1,-50,0,y+24),BackgroundColor3=THEME.Panel4,Text="›",TextColor3=THEME.Text,TextSize=16,Font=Enum.Font.GothamBold,AutoButtonColor=false,ZIndex=107},Config); Corner(n,8)
+        return box,p,n
+    end
+    local ModeBox,ModePrev,ModeNext=selector(52,"MODE")
+    local TimeBox,TimePrev,TimeNext=selector(120,"ROUND TIME")
+    local ChallengeBox,ChallengePrev,ChallengeNext=selector(188,"CHALLENGE")
+    local SensBox,SensPrev,SensNext=selector(256,"SENSITIVITY")
+    local Timer=Create("TextLabel",{Size=UDim2.new(0.45,-12,0,46),Position=UDim2.fromOffset(15,340),BackgroundColor3=THEME.Panel3,BorderSizePixel=0,Text="READY",TextColor3=THEME.Cyan,TextSize=11,Font=Enum.Font.GothamBlack,ZIndex=106},Config); Corner(Timer,10)
+    local Start=Create("TextButton",{Size=UDim2.new(0.55,-18,0,46),Position=UDim2.new(0.45,6,0,340),BackgroundColor3=THEME.Purple,Text="START LISTENING",TextColor3=Color3.fromRGB(15,4,24),TextSize=8,Font=Enum.Font.GothamBlack,AutoButtonColor=false,ZIndex=107},Config); Corner(Start,10)
+    local Caveat=Create("TextLabel",{Size=UDim2.new(1,-30,0,78),Position=UDim2.fromOffset(15,405),BackgroundTransparency=1,Text="Microphone access depends on the experience exposing Roblox voice/audio input. DONK cannot force microphone permission or enable voice features that the experience does not provide.",TextColor3=THEME.SubText,TextSize=7,Font=Enum.Font.GothamMedium,TextWrapped=true,TextXAlignment=Enum.TextXAlignment.Left,TextYAlignment=Enum.TextYAlignment.Top,ZIndex=106},Config)
+
+    local audioInput=nil; local analyzer=nil; local wire=nil; local createdAudioInput=false; local micReady=false
+    local function cleanupAnalyzer() SafeDestroy(wire); SafeDestroy(analyzer); wire=nil; analyzer=nil end
+    local function findAudioInput()
+        for _,d in ipairs(LocalPlayer:GetDescendants()) do if d:IsA("AudioDeviceInput") then return d end end
+        for _,d in ipairs(SoundService:GetChildren()) do if d:IsA("AudioDeviceInput") then local p; pcall(function() p=d.Player end); if p==nil or p==LocalPlayer then return d end end end
+        return nil
+    end
+    local function setupAudio()
+        cleanupAnalyzer(); audioInput=findAudioInput()
+        if not audioInput then
+            local ok,obj=pcall(function()
+                local a=Instance.new("AudioDeviceInput")
+                a.Player=LocalPlayer; a.Parent=SoundService
+                return a
+            end)
+            if ok and obj then audioInput=obj; createdAudioInput=true end
+        end
+        if not audioInput then micReady=false; MicStatus.Text="MIC • UNAVAILABLE"; MicStatus.TextColor3=THEME.Red; return false end
+        local ok=pcall(function()
+            analyzer=Instance.new("AudioAnalyzer"); analyzer.Name="DONK_Analyzer"; analyzer.Parent=Gui
+            wire=Instance.new("Wire"); wire.SourceInstance=audioInput; wire.SourceName="Output"; wire.TargetInstance=analyzer; wire.TargetName="Input"; wire.Parent=Gui
+        end)
+        micReady=ok and analyzer~=nil and wire~=nil
+        MicStatus.Text=micReady and "MIC • READY" or "MIC • UNAVAILABLE"; MicStatus.TextColor3=micReady and THEME.Green or THEME.Red
+        return micReady
+    end
+    setupAudio()
+
+    local function sensitivity()
+        return sensitivityIndex==5 and customSensitivity or SENS[sensitivityIndex]
+    end
+    local function readLevel()
+        if not micReady or not analyzer then return 0,0 end
+        local rms,peak=0,0
+        local ok=pcall(function() rms=analyzer.RmsLevel or 0; peak=analyzer.PeakLevel or 0 end)
+        if not ok then return 0,0 end
+        rms=math.sqrt(math.clamp(rms,0,1)); peak=math.sqrt(math.clamp(peak,0,1))
+        local mixed=(rms*0.78+peak*0.22)*sensitivity()
+        return math.clamp(mixed*100,0,100),math.clamp(peak*sensitivity()*100,0,100)
+    end
+    local function levelColor(v)
+        if v<35 then return THEME.Green elseif v<65 then return THEME.Yellow elseif v<80 then return THEME.Orange else return THEME.Red end
+    end
+    local function levelName(v)
+        if v<10 then return "QUIET" elseif v<20 then return "LOW" elseif v<35 then return "NORMAL" elseif v<50 then return "LOUD" elseif v<65 then return "VERY LOUD" elseif v<80 then return "DANGER" else return "CLIP" end
+    end
+    local function updateCircleDisplay(v)
+        local c=levelColor(v); BarFill.Size=UDim2.new(math.clamp(v/100,0,1),0,1,0); BarFill.BackgroundColor3=c; meterStroke.Color=c; LevelName.Text=levelName(v); LevelName.TextColor3=c
+        if running then LevelNumber.Text=tostring(math.floor(v+0.5)) end
+    end
+    local function updateConfig()
+        ModeBox.Text=MODES[modeIndex]
+        TimeBox.Text=MODES[modeIndex]=="Endless" and "NO LIMIT" or tostring(TIMES[timeIndex]).." SEC"
+        TimeBox.TextColor3=MODES[modeIndex]=="Endless" and THEME.Muted or THEME.Text
+        ChallengeBox.Text=CHALLENGES[challengeIndex]
+        SensBox.Text=SENS_NAMES[sensitivityIndex]
+        ChallengeReadout.Text=CHALLENGE_DESC[CHALLENGES[challengeIndex]]
+    end
+    local function cycle(which,delta)
+        if running then return end
+        if which=="mode" then modeIndex=((modeIndex-1+delta)%#MODES)+1 end
+        if which=="time" and MODES[modeIndex]~="Endless" then timeIndex=((timeIndex-1+delta)%#TIMES)+1 end
+        if which=="challenge" then challengeIndex=((challengeIndex-1+delta)%#CHALLENGES)+1 end
+        if which=="sens" then sensitivityIndex=((sensitivityIndex-1+delta)%#SENS_NAMES)+1 end
+        updateConfig()
+    end
+    ModePrev.MouseButton1Click:Connect(function() cycle("mode",-1) end); ModeNext.MouseButton1Click:Connect(function() cycle("mode",1) end)
+    TimePrev.MouseButton1Click:Connect(function() cycle("time",-1) end); TimeNext.MouseButton1Click:Connect(function() cycle("time",1) end)
+    ChallengePrev.MouseButton1Click:Connect(function() cycle("challenge",-1) end); ChallengeNext.MouseButton1Click:Connect(function() cycle("challenge",1) end)
+    SensPrev.MouseButton1Click:Connect(function() cycle("sens",-1) end); SensNext.MouseButton1Click:Connect(function() cycle("sens",1) end)
+    updateConfig()
+
+    local roundEnd=nil; local smooth=0; local prevRaw=0; local dangerHold=0
+    local winSound=Create("Sound",{SoundId="rbxassetid://9075431521",Volume=0.7},Gui)
+    local loseSound=Create("Sound",{SoundId="rbxassetid://8090403894",Volume=0.7},Gui)
+    local function stopRound(win,reason)
+        if not running then return end
+        running=false; roundEnd=nil; Start.Text="START LISTENING"; LevelNumber.Text="0"; dangerHold=0
+        if win then Timer.Text="YOU WIN"; Timer.TextColor3=THEME.Green; ChallengeReadout.Text="Challenge cleared."; pcall(function() winSound:Play() end) else Timer.Text="FAILED"; Timer.TextColor3=THEME.Red; ChallengeReadout.Text=reason or "Challenge failed."; pcall(function() loseSound:Play() end) end
+    end
+    local function startRound()
+        if running then stopRound(false,"Stopped by player."); return end
+        if not micReady and not setupAudio() then Notify("MICROPHONE UNAVAILABLE","This experience is not currently exposing a usable Roblox audio input.",THEME.Red,3); return end
+        running=true; smooth=0; prevRaw=0; dangerHold=0; Start.Text="STOP LISTENING"; Timer.TextColor3=THEME.Text
+        if MODES[modeIndex]=="Timed" then roundEnd=os.clock()+TIMES[timeIndex] else roundEnd=nil; Timer.Text="ENDLESS" end
+        ChallengeReadout.Text=CHALLENGE_DESC[CHALLENGES[challengeIndex]]
+    end
+    Start.MouseButton1Click:Connect(startRound)
+
+    Bag:Add(RunService.RenderStepped:Connect(function(dt)
+        local raw,peak=readLevel(); smooth += (raw-smooth)*math.clamp(dt*9,0,1); updateCircleDisplay(smooth)
+        if not running then prevRaw=raw; return end
+        if roundEnd then local left=math.max(0,roundEnd-os.clock()); Timer.Text=string.format("%02d:%02d",math.floor(left/60),math.floor(left%60)); if left<=0 then stopRound(true); return end end
+        local challenge=CHALLENGES[challengeIndex]
+        local fail=false; local reason=""
+        if challenge=="KEEP IT DOWN" then if smooth>=80 then dangerHold+=dt else dangerHold=math.max(0,dangerHold-dt*1.5) end; if dangerHold>=0.45 then fail=true; reason="You stayed dangerously loud too long." end end
+        if challenge=="STAY GREEN" then if smooth>=35 then dangerHold+=dt else dangerHold=math.max(0,dangerHold-dt*2) end; if dangerHold>=0.35 then fail=true; reason="You left the green zone." end end
+        if challenge=="NO RED" then if smooth>=65 then dangerHold+=dt else dangerHold=math.max(0,dangerHold-dt*3) end; if dangerHold>=0.22 then fail=true; reason="You entered the red zone." end end
+        if challenge=="NO SPIKES" then if peak>=90 or (raw-prevRaw)>=28 and raw>=65 then fail=true; reason="A microphone spike was detected." end end
+        prevRaw=raw
+        if fail then stopRound(false,reason) end
+    end))
+
+    task.spawn(function()
+        while Gui.Parent and not returning do
+            if not micReady then setupAudio() end
+            task.wait(1.5)
+        end
+    end)
+    Back.MouseButton1Click:Connect(function()
+        returning=true; running=false; Bag:DisconnectAll(); cleanupAnalyzer(); if createdAudioInput then SafeDestroy(audioInput) end; SafeDestroy(Gui); Hub.Visible=true
+    end)
+    MakeDraggable(Gui,HeaderF,Bag)
+end
+
+--============================================================
+-- V5 EXPANSION CONTINUES BELOW
+--============================================================
+--============================================================
 -- DONK ARCADE v5 THEME COMPATIBILITY
 --============================================================
 
@@ -8499,3 +9389,156 @@ local function LaunchRegisteredGame(
 		LaunchDeadSignal()
 	end
 end
+--============================================================
+-- HUB GAME CARDS + SEARCH (FINAL WIRING)
+--============================================================
+local CardRefs = {}
+
+local function CreateGameCard(gameData)
+    local card = Create("Frame", {
+        Name = gameData.Name,
+        LayoutOrder = gameData.LayoutOrder or 1,
+        BackgroundColor3 = THEME.Panel2,
+        BackgroundTransparency = 0.07,
+        BorderSizePixel = 0,
+        ClipsDescendants = true,
+        ZIndex = 24
+    }, GameScroll)
+    Corner(card,16)
+    Stroke(card,gameData.Accent,1,0.6)
+
+    local glow = Create("Frame", {
+        Size = UDim2.fromOffset(160,160),
+        Position = UDim2.new(1,-90,0,-70),
+        BackgroundColor3 = gameData.Accent,
+        BackgroundTransparency = 0.93,
+        BorderSizePixel = 0,
+        ZIndex = 24
+    }, card)
+    Corner(glow,999)
+
+    local icon = Create("Frame", {
+        Size = UDim2.fromOffset(48,48),
+        Position = UDim2.fromOffset(16,16),
+        BackgroundColor3 = gameData.Accent,
+        BackgroundTransparency = 0.14,
+        BorderSizePixel = 0,
+        ZIndex = 26
+    }, card)
+    Corner(icon,14)
+    Create("TextLabel", {
+        Size = UDim2.fromScale(1,1), BackgroundTransparency = 1,
+        Text = gameData.Icon or "?", TextColor3 = Color3.fromRGB(5,8,15),
+        TextSize = 16, Font = Enum.Font.GothamBlack, ZIndex = 27
+    }, icon)
+
+    Create("TextLabel", {
+        Size = UDim2.new(1,-88,0,22), Position = UDim2.fromOffset(78,15),
+        BackgroundTransparency = 1, Text = gameData.Name, TextColor3 = THEME.Text,
+        TextSize = 12, Font = Enum.Font.GothamBlack, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 26
+    }, card)
+    Create("TextLabel", {
+        Size = UDim2.new(1,-88,0,16), Position = UDim2.fromOffset(78,40),
+        BackgroundTransparency = 1, Text = gameData.Category or "ARCADE", TextColor3 = gameData.Accent,
+        TextSize = 7, Font = Enum.Font.GothamBold, TextXAlignment = Enum.TextXAlignment.Left, ZIndex = 26
+    }, card)
+    Create("TextLabel", {
+        Size = UDim2.new(1,-32,0,54), Position = UDim2.fromOffset(16,77),
+        BackgroundTransparency = 1, Text = gameData.Description or "", TextColor3 = THEME.SubText,
+        TextSize = 8, Font = Enum.Font.GothamMedium, TextWrapped = true,
+        TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top, ZIndex = 26
+    }, card)
+
+    local status = Create("TextLabel", {
+        Size = UDim2.fromOffset(94,28), Position = UDim2.fromOffset(16,147),
+        BackgroundColor3 = gameData.Accent, BackgroundTransparency = 0.82, BorderSizePixel = 0,
+        Text = gameData.Status or "PLAYABLE", TextColor3 = gameData.Accent,
+        TextSize = 7, Font = Enum.Font.GothamBold, ZIndex = 26
+    }, card)
+    Corner(status,99)
+
+    local PlayButton = Create("TextButton", {
+        Size = UDim2.fromOffset(116,34), Position = UDim2.new(1,-132,1,-49),
+        BackgroundColor3 = gameData.Accent, Text = "PLAY",
+        TextColor3 = Color3.fromRGB(5,8,14), TextSize = 9, Font = Enum.Font.GothamBlack,
+        AutoButtonColor = false, ZIndex = 27
+    }, card)
+    Corner(PlayButton,10)
+    AddHover(PlayButton,gameData.Accent,gameData.Accent:Lerp(Color3.new(1,1,1),0.15))
+
+    PlayButton.MouseButton1Click:Connect(function()
+        if gameData.Status ~= "PLAYABLE" then
+            Notify("COMING SOON","This arcade slot is still under construction.",gameData.Accent,2.5)
+            return
+        end
+        LaunchRegisteredGame(gameData.Name)
+    end)
+
+    CardRefs[gameData.Name] = {Card=card, Data=gameData}
+    return card
+end
+
+for _,gameData in ipairs(Games) do
+    CreateGameCard(gameData)
+end
+
+local function refreshCanvas()
+    task.defer(function()
+        GameScroll.CanvasSize = UDim2.fromOffset(0, Grid.AbsoluteContentSize.Y + 12)
+    end)
+end
+Grid:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(refreshCanvas)
+refreshCanvas()
+
+local function applySearch()
+    local q = string.lower(SearchBox.Text or "")
+    local visible = 0
+    for _,entry in pairs(CardRefs) do
+        local d = entry.Data
+        local hay = string.lower((d.Name or "").." "..(d.Category or "").." "..(d.Description or ""))
+        local show = q == "" or string.find(hay,q,1,true) ~= nil
+        entry.Card.Visible = show
+        if show and d.Status == "PLAYABLE" then visible += 1 end
+    end
+    if q == "" then GameCounter.Text = "6 GAMES ONLINE" else GameCounter.Text = tostring(visible).." MATCHING" end
+    refreshCanvas()
+end
+SearchBox:GetPropertyChangedSignal("Text"):Connect(applySearch)
+
+-- contained hub ambient effects
+local particles = {}
+for i=1,14 do
+    local p = Create("Frame", {
+        Size = UDim2.fromOffset(math.random(2,4), math.random(2,4)),
+        Position = UDim2.fromScale(math.random(),math.random()),
+        BackgroundColor3 = (i%3==0 and THEME.Purple) or (i%2==0 and THEME.Cyan) or THEME.Blue,
+        BackgroundTransparency = 0.65,
+        BorderSizePixel = 0,
+        ZIndex = 11
+    }, HubBg)
+    Corner(p,99)
+    particles[i] = {Object=p, Speed=math.random(4,12)/10000, Drift=(math.random()-0.5)/8000}
+end
+
+task.spawn(function()
+    while ScreenGui.Parent do
+        for _,d in ipairs(particles) do
+            local p=d.Object
+            if p and p.Parent then
+                p.Visible = Settings.Particles
+                if Settings.Particles then
+                    local x=p.Position.X.Scale+d.Drift
+                    local y=p.Position.Y.Scale-d.Speed
+                    if y < -0.02 then y=1.02; x=math.random() end
+                    if x < -0.02 then x=1.02 elseif x>1.02 then x=-0.02 end
+                    p.Position=UDim2.fromScale(x,y)
+                end
+            end
+        end
+        task.wait(0.03)
+    end
+end)
+
+Hub.Size = UDim2.fromOffset(870,550)
+Tween(Hub,0.28,{Size=UDim2.fromOffset(940,600)},Enum.EasingStyle.Back)
+Notify("DONK ARCADE v5.0","6 skill-based games are online.",THEME.Cyan,3)
