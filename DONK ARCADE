@@ -1,4 +1,50 @@
 --============================================================
+-- DONK ARCADE v5 THEME COMPATIBILITY
+--============================================================
+
+local THEME = THEME or {
+
+	Background = Color3.fromRGB(5, 7, 13),
+
+	Panel = Color3.fromRGB(10, 13, 22),
+
+	Panel2 = Color3.fromRGB(15, 20, 32),
+
+	Panel3 = Color3.fromRGB(21, 28, 44),
+
+	Panel4 = Color3.fromRGB(28, 36, 56),
+
+	Text = Color3.fromRGB(246, 249, 255),
+
+	SubText = Color3.fromRGB(137, 149, 175),
+
+	Muted = Color3.fromRGB(82, 94, 120),
+
+	Cyan = Color3.fromRGB(47, 224, 255),
+
+	Blue = Color3.fromRGB(82, 126, 255),
+
+	Purple = Color3.fromRGB(170, 83, 255),
+
+	Pink = Color3.fromRGB(255, 81, 191),
+
+	Green = Color3.fromRGB(66, 245, 151),
+
+	Yellow = Color3.fromRGB(255, 218, 77),
+
+	Orange = Color3.fromRGB(255, 159, 62),
+
+	Red = Color3.fromRGB(255, 72, 104),
+
+	Border = Color3.fromRGB(56, 68, 98),
+
+	DarkBorder = Color3.fromRGB(31, 39, 58)
+}
+
+--============================================================
+-- DONK ARCADE v5.0 GAME EXPANSION
+--============================================================
+--============================================================
 -- DONK ARCADE v5.0 GAME EXPANSION
 --============================================================
 --
